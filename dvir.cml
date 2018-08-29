@@ -1,0 +1,1049 @@
+<?xml version="1.0" encoding="utf-8"?>
+<html>
+<head>
+  <style type="text/css">
+    @media print {
+      body { }
+      p.img { text-align: center; page-break-inside: avoid }
+      img.CC { display: inline }
+    }
+    @media screen {
+      body { max-width: 800px; margin: auto }
+      p.img { text-align: center }
+      img.CC { display: inline }
+    }
+    p.date {
+      font-size: smaller;
+      margin: 0;
+    }
+    p.versionHistory {
+      color: gray
+    }
+    p.versionHistory a {
+      color: gray
+    }
+    p.ref {
+      text-indent: -2em;
+      padding-left: 2em;
+    }
+  </style>
+
+  <!-- PDFjs code (more at the end of the document) -->
+  <script src="http://mozilla.github.io/pdf.js/build/pdf.js"></script>
+
+</head>
+<body>
+  <h1>Revisiting Mathematical Equations in R: <br/>The 'dvir' package</h1>
+  <p>
+    <span style="font-style: italic">by Paul Murrell</span>
+    <a href="http://orcid.org"><img alt="" src="https://www.stat.auckland.ac.nz/~paul/ORCID/ORCiD.png" style="width: 16px; height: 16px; vertical-align: middle" /></a> <span style="font-family: mono; font-size: small"><a href="http://orcid.org/0000-0002-3224-8858">http://orcid.org/0000-0002-3224-8858</a></span>
+  </p>
+  <p class="date">
+    Version 1:
+    <rcode echo="FALSE" results="asis">
+cat(format(Sys.Date(), "%A %d %B %Y"))
+    </rcode>
+  </p>
+
+  <rcode id="init" echo="FALSE" message="FALSE" results="hide">
+opts_chunk$set(comment=" ", tidy=FALSE)
+options(width=100)
+## For wonky desktop set up
+options(bitmapType="cairo")
+  </rcode>
+  <rcode echo="FALSE">
+    library(grid)
+  </rcode>
+
+  <hr/>
+  <p>
+    <a rel="license"
+    href="http://creativecommons.org/licenses/by/4.0/"><img class="CC"
+    alt="Creative Commons License" style="border-width:0"
+    src="https://i.creativecommons.org/l/by/4.0/88x31.png"/></a><br/><span
+    xmlns:dct="http://purl.org/dc/terms/"
+    property="dct:title">This document</span>
+    by <span xmlns:cc="http://creativecommons.org/ns#"
+    property="cc:attributionName">Paul
+    Murrell</span> is licensed under a <a rel="license"
+    href="http://creativecommons.org/licenses/by/4.0/">Creative
+    Commons Attribution 4.0 International License</a>.
+  </p>
+  <hr/>
+  <p>
+    This report describes an R package called 'dvir' that aims
+    to use TeX as a layout engine, but performs all rendering 
+    within R.  The package reads DVI files that are produced from
+    TeX files and renders the content using the R package 'grid'.
+  </p>
+
+  <toc/>
+
+  <h2><a name="intro">Mathematical Equations in R</a></h2>
+  <p>
+    The image below shows a 'lattice' (CITE) line plot of the Standard Normal
+    probability distribution function, with a text annotation
+    showing the general form of the Gaussian function.
+    This image was drawn with R (<a href="#R"/>) using
+    the "plotmath" feature that makes it possible to
+    annotate a plot with mathematical equations
+    (<a href="#doi:10.1080/10618600.2000.10474900"/>)
+  </p>
+  <rcode echo="FALSE" fig.height="4" dpi="100">
+library(lattice)
+x <- seq(-4, 4, length.out=100)
+y <- dnorm(x)
+xyplot(y ~ x, type="l", ylim=c(0, .6),
+       panel=function(...) {
+           panel.xyplot(...)
+           ltext(0, .5, 
+                 expression(g(x) == frac(1, sigma*sqrt(2*pi))*e^{-frac(1, 2)*(frac(x - mu, sigma))^2}))
+       })
+  </rcode>
+
+  <p>
+    The basic text-drawing functions in R graphics all accept,
+    in addition to a simple character value, an R expression.
+    An R expression is interpreted as a mathematical equation,
+    with certain symbols, such as <code>mu</code> and <code>sigma</code>,
+    converted to greek characters, 
+    and certain functions, such as <code>frac</code> and <code>sqrt</code>
+    treated as layout instructions similar to the
+    <code>\frac</code> and <code>\sqrt</code> operators in TeX mathematical
+    expressions (CITE TeX).  The following R code provides a simple
+    example and the result is shown below the code.
+  </p>
+  <rcode fig.width="1" fig.height="1">
+## expr <- expression(frac(1, sigma*sqrt(2*pi)))
+expr <- expression(bgroup("(", frac(x - mu, sigma), ")"))
+library(grid)
+grid.text(expr)
+  </rcode>
+  <p>
+    The algorithm used to draw the mathematical equations in R attempts
+    to mimic the algorithm used by TeX (CITE), but unfortunately the result is 
+    nowhere near the quality of the real thing.  
+  </p>
+  <p>
+    One significant difference
+    arises from the fact that R does not use the TeX math fonts, but
+    it is possible to make use of the TeX fonts, with the 'fontcm'
+    package (CITE), as shown below.  
+  </p>
+  <rcode fig.keep="none" results="hide" message="FALSE">
+library(extrafont)
+font_install('fontcm')
+pdf("fontcm.pdf", width=1, height=1)
+grid.text(expr,
+          gp=gpar(fontfamily="CM Roman"))
+dev.off()
+embed_fonts("fontcm.pdf", outfile="fontcm-embed.pdf")
+  </rcode>
+  <canvas class="pdf" id="fontcm-embed"></canvas>
+  <p>
+    While this is something of an improvement,
+    it is still some distance from the TeX result, which is shown below.
+  </p>
+  <rcode echo="FALSE">
+writeLines(c("\\documentclass{standalone}",
+             "\\begin{document}",
+             "$(\\frac{x - \\mu}{\\sigma})$",
+             "\\end{document}"),
+           "fragment.tex")
+system("latex fragment.tex")
+system("dvipdfm fragment.dvi")
+  </rcode>
+  <canvas class="pdf" id="fragment" scale="2"></canvas>
+  <p>
+    A different approach to including mathematical equations within R plots
+    is to use the 'tikzDevice' package.  This allows us to specify an
+    equation using 
+    TeX syntax within character values.
+    For example, we can write code like the following.
+  </p>
+  <rcode eval="FALSE">
+grid.text("$\\frac{x - \\mu}{\\sigma}$")
+  </rcode>
+  <p>
+    The following code reproduces the original plot with the
+    full Gaussian function.
+  </p>
+  <rcode results="hide">
+library(tikzDevice)
+options(tikzDocumentDeclaration =
+          "\\documentclass[12pt]{article}")
+tikz("tikz.tex", standAlone=TRUE, height=4)
+tex <- "$g(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{1}{2}(\\frac{x - \\mu}{\\sigma})}$"
+xyplot(y ~ x, type="l", ylim=c(0, .6),
+       panel=function(...) {
+           panel.xyplot(...)
+           ltext(0, .5, tex)
+       })
+dev.off()
+  </rcode>
+  <rcode echo="FALSE">
+system("pdflatex tikz.tex")
+  </rcode>
+  <canvas class="pdf" id="tikz"></canvas>
+  <p>
+    This produces a full-quality TeX version of the mathematical equation
+    because the 'tikzDevice' package generates a TeX version (actually
+    a PGF/TikZ version) of the
+    entire plot.  This is evident in the fact that the axis and tick
+    labels on the plot are also rendered using TeX fonts.
+  </p>
+  <p>
+    TeX fonts everywhere
+    is a nice feature if the plot is to be used within a TeX
+    document, but it can be undesirable if all we want is the 
+    equation in TeX format.
+  </p>
+  <p>
+    This report introduces an R package called 'dvir' that
+    allows the plot to be normal R graphics with just the equation
+    rendered in full-quality TeX layout and fonts.  
+    The package is in the early stages of development, but it can
+    reproduce plain LaTeX output within R on a range of graphics devices.
+  </p>
+  <p>
+    The next section describes the convenient 
+    high-level interface that the 'dvir' package provides
+    for rendering LaTeX equations in R graphics.
+    Subsequent sections document the lower-level interface and
+    internal design of the 'dvir' package.
+  </p>
+<!-- kept in case I want it back
+  <rcode echo="FALSE" results="hide" warning="FALSE">
+library(dvir)
+writeLines(c("\\documentclass[12pt]{standalone}",
+             "\\begin{document}",
+             "$g(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{1}{2}(\\frac{x - \\mu}{\\sigma})}$",
+             "\\end{document}"),
+           "gaussian.tex")
+system("latex gaussian.tex")
+pdf("dvir.pdf", height=4)
+dg <- dviGrob("gaussian.dvi", unit(0, "native"), unit(.5, "native"))
+p <- xyplot(y ~ x, type="l", ylim=c(0, .6),
+            panel=function(...) {
+                panel.xyplot(...)
+                grid.draw(dg)
+            })
+print(p, newpage=FALSE)
+dev.off()
+embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
+           options=paste0("-sFONTPATH=", fontPaths(dg)))
+  </rcode>
+  <canvas class="pdf" id="dvir-embedded"></canvas>
+-->
+
+  <h2><a name="dvir">The 'dvir' package</a></h2>
+  <p>
+    The simplest interface provided by the 'dvir' package
+    is the <code>grid.latex</code> function.  The first argument
+    to this function is a chracter value, which is interpreted as LaTeX code.
+    This can be just plain text, but it can also contain,
+    for example, TeX mathematical expressions.
+    The following code provides a simple demonstration.
+  </p>
+  <rcode>
+library(dvir)
+  </rcode>
+  <rcode id="grid.latex" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE">
+grid.latex("$x - \\mu$")
+  </rcode>
+
+  <p>
+    It is also possible to use standard LaTeX commands, as in the following
+    example.
+  </p>
+  <rcode id="fontfaces" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE">
+grid.latex("plain, {\\it italic}, and {\\bf bold}")
+  </rcode>
+
+  <p>
+    The following code shows the how the 
+    <code>grid.latex</code> function can be used to generate 
+    a mathematical equation within a 'lattice' plot
+    (where the LaTeX string <code>tex</code> 
+    was defined in the 'tikzDevice' example above).
+  </p>
+  <rcode id="grid.latex.plot" fig.height="4" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE">
+xyplot(y ~ x, type="l", ylim=c(0, .6),
+       panel=function(...) {
+           panel.xyplot(...)
+           grid.latex(tex, 0, .5, default.units="native")
+       })
+  </rcode>
+
+  <p>
+    In the following example, we use the 'xtable' package (CITE) 
+    to generate LaTeX code for a table and then 'dvir' to draw 
+    the table within a 'lattice' plot.
+  </p>
+  <rcode results="hide">
+library(xtable)
+xyplot(mpg ~ disp, mtcars,
+       panel=function(...) {
+           panel.xyplot(...)
+           tex <- print(xtable(head(mtcars[1:3])),
+                        floating=FALSE)
+           grid.latex(tex, 
+                      x=unit(1, "npc") - unit(2, "mm"),
+                      y=unit(1, "npc") - unit(2, "mm"),
+                      just=c("right", "top"))
+       })
+  </rcode>
+  
+  <p>
+    The <code>grid.latex</code> function is just a thin wrapper around
+    a call to LaTeX, which generates a DVI file, followed by calls
+    to functions that read the DVI file and render its contents in R.
+    These functions that read and render DVI files
+    make up the real heart of the 'dvir' package and 
+    provide the focus for the remainder of this report.
+  </p>
+
+  <h2><a name="dvi">Reading DVI files</a></h2>  
+  <p>
+    A standard LaTeX workflow consists of writing a source file
+    containing LaTeX text and code
+    (suffix <code>.tex</code>) and then running <code>pdflatex</code>
+    on that file to produce a PDF document.  An alternative is to
+    run <code>latex</code>, which produces an intermediate DVI file
+    (suffix <code>.dvi</code>), and then <code>dvips</code> or
+    <code>dvisvgm</code> (or even <code>dvipdfm</code>) to 
+    produce a PostScript or SVG (or PDF) document from the DVI file.
+  </p>
+  <p>
+    A DVI file is a device-independent description of the placement of
+    individual characters on a page.  It contains instructions that 
+    move the current location across or up and down,
+    define fonts, select fonts, place characters at the current location, 
+    and draw vertical
+    and horizontal rectangles.
+  </p>
+  <p>
+    The 'dvir' package provides a function <code>readDVI</code> to
+    read a DVI file into R.  For example, the following LaTeX
+    code describes a very simple document that just contains the
+    word "Hello".  This code has been saved in a text file called
+    <code>"simple.tex</code>.
+  </p>
+  <rcode echo="FALSE">
+cat(readLines("simple.tex"), sep="\n")
+  </rcode>
+  <p>
+    If we run <code>latex</code> on that file ...
+  </p>
+  <rcode>
+system("latex simple.tex")
+  </rcode>
+  <p>
+    ... we get a DVI file called
+    <code>simple.dvi</code> and the following code reads that DVI
+    file into R.
+  </p>
+  <rcode>
+dvi <- readDVI("simple.dvi")
+dvi 
+  </rcode>
+  <p>
+    The DVI format is a binary format (CITE dvitype source AND https://web.archive.org/web/20070403030353/http://www.math.umd.edu/~asnowden/comp-cont/dvi.html#right AND get local copy of latter), 
+    so 'dvir' uses the 'hexView' 
+    package to define memory blocks for each possible DVI operation
+    and to read those memory blocks from the DVI file.
+    The result of <code>readDVI</code> is a "DVI" object, which is
+    a list of 'hexView' "rawFormat" 
+    objects ...
+  </p>
+  <rcode>
+class(dvi[[1]])
+dvi[[1]]
+  </rcode>
+  <p>
+    ... and it is easy to run through the list of DVI operations simply 
+    by calling <code>lapply</code> (or <code>sapply</code>) on this list.
+    For example, the following code generates a numeric vector
+    containing all of the operation codes from the DVI file.
+  </p>
+  <rcode>
+sapply(dvi, function(op) { hexView::blockValue(op$blocks$op.opcode) })
+  </rcode>
+
+
+  <h2><a name="render">Rendering DVI files</a></h2>  
+  <p>
+    The <code>grid.dvi</code> function renders a "DVI" object,
+    by converting the DVI instructions
+    from a DVI file into 'grid' drawing on an R graphics device.
+  </p>
+  <rcode id="grid.dvi" fig.width="1" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE">
+grid.dvi(dvi)
+  </rcode>
+  <p>
+    The essential steps in faithfully rendering the DVI file
+    are as follows:
+  </p>
+  <ul>
+    <li>
+      Convert DVI locations and distances into an R graphics coordinate system
+      <br/>(<b>coordinate systems</b>)
+    </li>
+    <li>
+      Convert DVI font definions into R graphics font specifications 
+      <br/>(<b>font mappings</b>)
+    </li>
+    <li>
+      Convert DVI characters into R character values
+      <br/>(<b>character encodings</b>)
+    </li>
+  </ul>
+
+  <h3>Coordinate systems</h3>
+  <p>
+    The DVI coordinate system has (0, 0) at top-left and the scale of 
+    locations and distances is defined in the first "preamble" operation
+    in the DVI file.
+  </p>
+  <rcode echo="FALSE">
+dvitxt <- capture.output(dvi)
+cat(dvitxt[1:2], sep="\n")
+  </rcode>
+  <p>
+    We multiply a location or distance by the <code>num</code>erator,
+    divide by the <code>den</code>ominator, multiply by the
+    <code>mag</code>nitude, and divide by 1000 
+    to get a value in 10^(-7)mm units.
+  </p>
+  <p>
+    The 'grid' package can specify locations and dimensions in mm
+    via the <code>unit</code> function.  What the 'dvir' 
+    package actually does is calculate a bounding box from
+    the DVI operations, create a 'grid' viewport based on the size
+    of that bounding  box, with an x-scale and a y-scale that encompasses
+    the DVI operations, and renders the DVI operations using "native" 
+    coordinates within the viewport.
+  </p>
+
+  <h3>Font mappings</h3>
+  <p>
+    The most important part of a DVI font definition is the 
+    <code>fontname</code>.  In our simple example, this name
+    is <code>cmr12</code> (a Computer Modern Roman serif font 
+    at 12pt size).
+  </p>
+  <rcode echo="FALSE">
+fontdef <- grep("fnt_def_1", dvitxt)[1] + 0:1
+cat(dvitxt[fontdef], sep="\n")
+  </rcode>
+  <p>
+    We must generate an R graphics font specification from just this
+    font name, a  task that is complicated by the fact that
+    font specifications are different for different graphics devices
+    in R.
+  </p>
+  <p>
+    In the case of the <code>pdf</code> graphics device, we specify a 
+    font by giving the name of 
+    a Type 1 Font definition and we define a Type 1 Font by specifying
+    a path to an AFM (Adobe 
+    Font Metrics) file. We also need to find a path to a PFB 
+    (Printer Font Binary) file so that we can embed the actual font
+    within the final PDF file.
+  </p>
+  <p>
+    The 'dvir' package uses the <code>kpsewhich</code> program to
+    first find the font mapping file <code>pdftex.map</code>, which contains
+    information on mappings from font names  (as seen in the DVI file)
+    to actual font files, 
+    and then <code>kpsewhich</code> again to find the actual font files.  
+    Some typical results on an Ubuntu system with TeX Live are shown below.
+    First, we have the location of the <code>pdftex.map</code> file ...
+  </p>
+  <rcode>
+mapfile <- system("kpsewhich pdftex.map", intern=TRUE)
+mapfile
+  </rcode>
+  <p>
+    ... and the line in this file for the <code>cmr12</code> DVI font name
+    shows the name of an actual font file at the end of the line ...
+  </p>
+  <rcode>
+system("grep ^cmr12 $(kpsewhich pdftex.map)", intern=TRUE)
+  </rcode>
+  <p>
+    We can get the location of this PFB file ...
+  </p>
+  <rcode>
+pfbfile <- system("kpsewhich cmr12.pfb", intern=TRUE)
+pfbfile
+  </rcode>
+  <p>
+    ... and the location of the corresponding AFM file ...
+  </p>
+  <rcode>
+afmfile <- system("kpsewhich cmr12.afm", intern=TRUE)
+afmfile
+  </rcode>
+  <p>
+    This gives us enough information to create a Type 1 Font definition
+    called <code>"cmr12"</code> in R ...
+  </p>
+  <rcode>
+Type1Font("cmr12", rep(afmfile, 4))
+  </rcode>
+  <p>
+    ... and we can then draw text with 'grid' using that font (on a 
+    <code>pdf</code> device) by
+    specifying <code>"cmr12"</code> as the font family ...
+  </p>
+  <rcode fig.keep="none" results="hide">
+pdf("test.pdf", width=1, height=.5)
+grid.text("Test", gp=gpar(fontfamily="cmr12"))
+dev.off()
+  </rcode>
+  <p>
+    For the resulting
+    PDF file to display properly, it is best to embed the fonts
+    in the PDF file with the <code>embedFonts</code> function.
+    This  requires us to specify the locations of the PFB files to embed.   
+  </p>
+  <rcode>
+embedFonts("test.pdf", outfile="test-embed.pdf",
+           options=paste0("-sFONTPATH=", pfbfile))
+  </rcode>
+  <canvas id="test-embed" class="pdf"/>
+  <p>
+    The 'dvir' package
+    provides a <code>fontPaths</code> function that can generate
+    the information needed to embed fonts.  It works with a grob
+    that is created by <code>grid.dvi</code>.  In the code below,
+    rather than drawing DVI output, we just create a grob from
+    a DVI object
+    and use <code>fontPaths</code> to generate the locations 
+    of fonts within that DVI object.
+  </p>
+  <rcode>
+fontPaths(dviGrob(dvi, device="pdf"))
+  </rcode>
+
+  <p>
+    The <code>postscript</code> graphics device also uses Type 1 fonts,
+    so is handled in exactly the same way as the <code>pdf</code> device.
+  </p>
+
+  <p>
+    However, Cairo-based devices (CITE Cairo) 
+    (e.g., <code>x11(type="cairo")</code> and
+    <code>cairo_pdf</code>) require a different approach to font mapping.
+    Specifying a font on these devices 
+    is more convenient in R because we just have to give 
+    a font family name, like <code>"Times"</code>.  Unfortunately, that makes
+    it harder to map a DVI font name to an R font specification for these
+    devices.
+  </p>
+  <p>
+    The Cairo devices find an actual font from a font family name
+    using a program called <code>fontconfig</code>.  For example, 
+    when we specify <code>"Times"</code> in R, the actual font that
+    gets used is whatever <code>fontconfig</code> finds as the best
+    match.
+  </p>
+  <rcode>
+system("fc-match Times", intern=TRUE)
+  </rcode>
+  <p>
+    Because R only gives <code>fontconfig</code> a font family, the first
+    step is to map the DVI font name to a font family.
+    The 'dvir' package does this by looking at the AFM file (found above) and
+    extracting the <code>FamilyName</code> field.
+  </p>
+  <rcode>
+head(readLines(afmfile))
+  </rcode>
+  <p>
+    This font family by itself is not specific enough to ensure that 
+    <code>fontconfig</code> will find the same font that was used to
+    create the DVI file.  However, it is possible to create configuration
+    files for <code>fontconfig</code> that influence how it matches
+    family names to actual fonts.
+  </p>
+  <p>
+    The 'dvir' package performs several steps to force 
+    <code>fontconfig</code> to find the right font.
+    First, we append the <code>FullName</code> from the AFM file
+    to the family name (e.g., in the case above, the family
+    name becomes <code>Computer Modern CMR12</code>).
+    Next, we generate a <code>fontconfig</code> configuration
+    entry that expands this family name to a more detailed
+    font specification.  The configuration also ensures that 
+    <code>fontconfig</code> will search in the directory that contains 
+    the font we want to match.
+    An example is shown below and the effect of
+    this configuration is that when <code>fontconfig</code> attempts
+    to match a font with "family" name <code>Computer Modern CMR12</code>, 
+    the match is modified 
+    to find a font with "family" <code>Computer Modern</code> and
+    "postscriptname" <code>CMR12</code>.
+  </p>
+  <pre><![CDATA[
+  <dir>/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm</dir>
+  <match target="pattern">
+    <test name="family" mode="eq">
+      <string>Computer Modern CMR12</string>
+    </test>
+    <edit name="family" mode="assign" binding="strong">
+      <string>Computer Modern</string>
+    </edit>
+    <edit name="postscriptname" mode="assign" binding="strong">
+      <string>CMR12</string>
+    </edit>
+  </match>
+  ]]>
+  </pre>
+  <p>
+    The 'dvir' package generates these font configurations 
+    on the fly, as it reads a DVI file, which means that it must
+    force <code>fontconfig</code> to load these new font configurations.
+    This is done via  a fork of the 'gdtools' package, which
+    provides a <code>fontconfig_reinit</code> function
+    (see the <a hrec="#requirements"/> Section).
+  </p>
+  <p>
+    As well as mapping to the correct font file,
+    so that text is drawn correctly,
+    'dvir' must access the correct font metric information (because
+    when a DVI file says to draw a character we must move the current
+    position forward to the end of that character, which requires
+    knowing the exact character width).
+  </p>
+  <p>
+    For the <code>pdf</code> and <code>postscript</code> devices, 
+    this font metric information is taken
+    from the AFM file.  For Cairo-based devices, an off-screen
+    <code>pdf</code> device is created and the AFM files are used 
+    with that device (because the Cairo and PangoCairo font metric
+    information that is provided by Cairo-based devices
+    did not prove to be consistently accurate).
+  </p>
+
+  <h3>Character encodings</h3>
+  <p>
+    The final piece required for properly rendering a DVI file in R
+    is to correctly generate character values from
+    <code>set_char</code> operations.
+  </p>
+  <rcode echo="FALSE">
+setchars <- grep("set_char", dvitxt)
+cat(dvitxt[setchars], sep="\n")
+  </rcode>
+  <p>
+    As we can see, the DVI file contains instructions such as "typeset character
+    72".  How do we interpret the number 72 as a character?  
+    This number means the 
+    seventy-second character within the current font, so the answer depends
+    on which font has been selected.
+    For example, if we look within the AFM files for two different
+    fonts, <code>cmr12</code> (for normal
+    english text) and
+    <code>cmmi12</code> (for mathematical equations), we can see
+    that, while the seventy-second character in both fonts is 'H',
+    the thirty-third character is an exclamation sign in <code>cmr12</code>,
+    but it is the Greek character omega in <code>cmmi12</code>.
+  </p>
+  <rcode echo="FALSE">
+afm <- readLines(afmfile)
+cat(head(afm), 
+    "...",
+    afm[grep("^C ", afm)][34],
+    "...",
+    afm[grep("^C ", afm)][73],
+    sep="\n")
+  </rcode>
+  <rcode echo="FALSE">
+afmfile2 <- system("kpsewhich cmmi12.afm", intern=TRUE)
+afm2 <- readLines(afmfile2)
+cat(head(afm2), 
+    "...",
+    afm2[grep("^C ", afm2)][34],
+    "...",
+    afm2[grep("^C ", afm2)][73],
+    sep="\n")
+  </rcode>
+  <p>
+    We saw in the previous section that we can specify the current
+    DVI font for R graphics devices, but we still need to select
+    the correct character from the current font.
+  </p>
+  <p>
+    To make things more complicated, when we draw text within R, we must
+    provide a character value.  This means that, we must somehow choose
+    a character value that corresponds to the seventy-second character 
+    within the current font.  This is the inverse of the first problem:
+    we now want to go from a character to a number.
+  </p>
+  <p>
+    Fortunately, for the limited set of 128 ASCII characters, we can rely
+    on a consistent mapping between characters and numbers.
+    For example, 
+    the character value <code>"H"</code> will be converted to the number 72 
+    and the character value <code>"!"</code>
+    will be converted to the number 33 (and vice versa).
+  </p>
+  <p>
+    For the <code>pdf</code> and <code>postscript</code> graphics devices,
+    we now have almost everything we need.  We can take the character number
+    in the DVI file and convert it to an ASCII character value ...
+  </p>
+  <rcode>
+rawToChar(as.raw(72))
+  </rcode>
+  <p>
+    ... and we can rely on the character value <code>"H"</code>
+    being converted to the number 72 to find the seventy-second
+    character in the current font.
+  </p>
+  <p>
+    However, one final detail is required.  For Type 1 Fonts on the
+    <code>pdf</code> and <code>postscript</code> graphics devices,
+    there is another conversion to worry about.  The character number
+    is converted to a character name to find the actual "glyph"
+    (letter shape) that will be drawn by the font.  We can see this
+    correspondence in the lines of the AFM files above.  For example,
+    in the <code>cmr12</code> font, character 33 (<code>C 33</code>)
+    corresponds to the character name <code>exclam</code> (<code>N
+    exclam</code>).  In the <code>cmmi12</code> font, character 33
+    corresponds to the character name <code>omega</code>. These
+    character names are used to identify the glyphs in the PFB files
+    (which are the shapes that are actually drawn by the graphics
+    device).
+  </p>
+  <p>
+    This means that we must set up the correct mapping between
+    character numbers and character names for each Type 1 Font that
+    we use.
+  </p>
+  <p>
+    The 'dvir' package generates this "character encoding" 
+    for each font from the font AFM file,
+    based on the order of the characters within the file, and
+    the character encoding is then 
+    specified as part of the Type 1 Font that we 
+    create.  For example, the first few characters in the 
+    <code>cmr12</code> font are shown below ...
+  </p>
+  <rcode echo="FALSE">
+cat(head(afm), 
+    "...",
+    afm[grep("^C ", afm)][1:5],
+    sep="\n")
+  </rcode>
+  <p>
+    ... and this produces an encoding file that begins like this ...
+  </p>
+  <rcode echo="FALSE">
+encfile <- dvir:::fontEnc(afmfile)[1]
+enc <- readLines(encfile)
+cat(head(enc),
+    sep="\n")
+  </rcode>
+  <p>
+    ... and this encoding file, along with the AFM file,
+    is used to define a Type 1 Font with the correct encoding ...
+  </p>
+  <rcode echo="FALSE">
+Type1Font("cmr12", rep(afmfile, 4), encoding=encfile)    
+  </rcode>  
+  <p>
+    In the case of characters in the 
+    english alphabet, on the <code>pdf</code> and <code>postscript</code>
+    graphics devices, things are relatively straightforward.
+    For example, the DVI character number 72 is converted to
+    the R character value
+    <code>"H"</code>.  That will be converted to the number 72 
+    and the seventy-second character name in encoding file for the font
+    will be <code>H</code>, which will produce a glyph that draws an 'H'.
+  </p>
+  <p>
+    For characters outside the english alphabet, things can get
+    more complicated.  For example, the DVI character number 33 
+    will be converted to the R character value <code>"!"</code>,
+    which will be converted to the number 33.  For the 
+    font <code>cmr12</code>, the encoding converts 33 to the character
+    name <code>exclam</code>, which will draw an exclamation glyph,
+    but for the font <code>cmmi12</code>, the encoding converts 33
+    to the character name <code>omega</code>, which will draw a 
+    glyph representing the Greek character omega.
+  </p>
+  <p>
+    To produce a summation sign within a mathematical equation,
+    the DVI font is <code>cmex10</code>, 
+    the DVI character number is 80, the R character value is <code>"P"</code>,
+    which is converted back to 80,
+    the encoding converts 80 to the character name 
+    <code>summationtext</code>, which will draw a summation glyph like the
+    one below.
+  </p>
+  <rcode id="summation" fig.width="1" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE">
+grid.latex("$\\sum$")    
+  </rcode>
+  <p>
+    TODO: special case zero character
+  </p>
+  <p>
+    Unfortunately, 
+    the situation is completely different for Cairo-based graphics devices.
+  </p>
+  <p>
+    One advantage of using the Cairo-based devices is that we
+    are able to use UNICODE UTF-8 character values when specifying text to
+    draw, which means that we can specify any character in an
+    R character value.  For example, we can specify a Greek omega character
+    with <code>"\U03C9"</code>.
+  </p>
+  <rcode>
+"\U03C9"
+  </rcode>
+  <p>
+    The downside of the Cairo-based devices 
+    is that, from R, we cannot control the 
+    details of the conversions between numbers and characters,
+    like font encodings, as we did for the <code>pdf</code> device.
+    This means that we have to make sure that what we feed into
+    a Cairo-based graphics device is something that will produce 
+    the correct font output.
+  </p>
+  <p>
+    The approach taken by the 'dvir' package is to convert DVI
+    character numbers into UNICODE character values and rely on Cairo
+    to map the UNICODE values to the correct font glyphs.  For example, 72 is
+    converted into "\U0048" (the UNICODE code point for "H") and
+    Cairo maps that UNICODE code point to the glyph "H" in the current font.
+  </p>
+  <p>
+    This approach still requires a conversion from DVI character numbers to
+    UNICODE character values.  As we noted at the start of this section,
+    the DVI character number <i>i</i> specifies the <i>i</i>th character
+    within the current font, so the conversion will depend
+    on which font we are currently using.
+  </p>
+  <p>
+    The 'dvir' package currently specifies these conversions through
+    hard-coded tables and supports UNICODE conversions for
+    several basic TeX fonts: 
+    Computer Modern Roman, e.g., 
+    <code>cmr12</code>,
+    Computer Modern Math Italic, e.g.,
+    <code>cmmi12</code>,
+    Computer Modern Math Symbols, e.g.,
+    <code>cmsy12</code>, and
+    Computer Modern Math Extensions, e.g.,
+    <code>cmex10</code>.
+  </p>
+  <rcode>
+dvir:::rawToUTF8(as.raw(33), "CMR")
+dvir:::rawToUTF8(as.raw(33), "CMMI")
+  </rcode>
+  <p>
+    The <code>cmex10</code>
+    font is an exceptional case.  
+    This font contains symbols for mathematical equations such
+    as large brackets (character name <code>parenleftbig</code>).  
+    The problem is that some of these symbols
+    have no counterpart in UNICODE, which means that it is not possible
+    to specify a UNICODE character
+    value that will select these glyphs from a font.
+  </p>
+  <p>
+    The solution to this problem in 'dvir' is to provide a customised
+    font called <code>cmexunicode10</code>.  This is the same as the
+    <code>cmex10</code> font, but all of the glyphs in the font
+    have been renamed to use the same glyph names as <code>cmr12</code>.
+    The conversion from DVI number to UTF-8 that is 
+    used for <code>cmex10</code> is the same as the conversion that
+    is used for <code>cmr12</code>, but the glyphs in the two fonts
+    are very different.  
+  </p>
+  <p>
+    This customised <code>cmexunicode10</code> font
+    is included as part of the 'dvir' pacakge.
+  </p>
+  <p>
+    In the case of characters in the 
+    english alphabet, on Cairo-based
+    graphics devices, things are again relatively straightforward.
+    For example, the DVI character number 72 is converted to the 
+    R character value <code>"\U0048"</code>, which maps 
+    to a character name <code>H</code>, which produces a glyph
+    that draws an 'H' (in most fonts).
+  </p>
+  <p>
+    For characters outside the english alphabet, things are a little
+    more complicated.  For example, the DVI character number 33 with
+    font <code>cmr12</code> is
+    converted to <code>"\U0021"</code>, which maps to a character name
+    <code>exclam</code>, which draws an exclamation glyph, but with font
+    <code>cmmi12</code> it is converted to <code>"\U03C9"</code>,
+    which maps to a character name <code>omega</code>, which draws
+    a Greek omega glyph.
+  </p>
+  <p>
+    To produce a summation sign within a mathematical equation,
+    the DVI font is <code>cmex10</code>, which gets switched to
+    <code>cmexunicode10</code>,
+    the DVI character number is 80, 
+    the R character value is <code>"\U0050"</code> (UNICODE for "P"),
+    which maps to a character name <code>P</code>, which draws a
+    summation sign glyph (because the character names have all been
+    modified in the <code>cmexunicode10</code> font).
+  </p>
+
+
+  <p>
+    TODO: Make sure that tests in DVI/Test/test.R work with the 'dvir' package.
+  </p>
+
+  <h2><a name="discussion">Discussion</a></h2>
+  <p>
+    The 'dvir' package is in an early development stage.
+    It has only been tested on Ubuntu systems,
+    it only works with a subset of R graphics devices, and
+    it only works with plain LaTeX documents.
+  </p>
+  <p>
+    The 'dvir' package is also very slow.  It draws each character
+    (and each filled rectangle) as a separate 'grid' grob.
+  </p>
+  <p>
+    There are many ways in which the basic functionality of the
+    'dvir' package could be extended. 
+  </p>
+  <p>
+    support for other devices, esp Windows (and SVG output ?) - 
+    support for \specials ? (all sorts of things here, including
+    PGF/TikZ support!?) - handle fonts (in DVI) other
+    than standard TeX ones - handle fonts other than Type 1 (!) - 
+    handle multi-page DVI files - support
+    ALL DVI operations (e.g., vrule, nop) - provide extension 
+    mechanism for third parties to add handling of \specials -
+    allow user to specify font mapping file
+  </p>
+  <p>
+    Acknowledge Duncan Murdoch's 'patchDVI' package
+  </p>
+  <p>
+    Acknowledge matplotlib dviread package 
+    https://matplotlib.org/devdocs/_modules/matplotlib/dviread.html
+  </p>
+
+  <h2><a name="requirements">Technical requirements</a></h2>
+  <p>
+    The examples and discussion in this document relate to <a
+    href="https://github.com/pmur002/dvir/releases/tag/v0.1-0">version
+    0.1-0</a> of the 'dvir' package.
+  </p>
+  <p>
+    AND fork of gdtools
+    AND recent hexView (for integer3 support)
+  </p>
+  <p>
+    This report was generated within a Docker container
+    (see <a href="#Resources">Resources</a> section below).
+  </p>
+
+  <h2><a name="Resources">Resources</a></h2>
+  <ul>
+    <li>
+      The <a href="dvir.cml">raw source file</a> for this
+      report, a <a href="dvir.xml">valid XML</a>
+      transformation of the source file, a <a
+      href="dvir.Rhtml">'knitr' document</a> generated from
+      the XML file, 
+      two <a href="toc.R">R</a> <a href="bib.R">files</a> and
+      the <a href="dvir.bib">bibtex file</a>
+      that are used to generate the table of contents and reference sections,
+      two <a href="common.xsl">XSL</a> <a
+      href="knitr.xsl">files</a> and an 
+      <a href="knit.R">R file</a> that are used to transform the XML to
+      the 'knitr' document, and a <a href="Makefile">Makefile</a> that
+      contains code for the other transformations and coordinates
+      everything.  
+      These materials are also available
+      on <a href="https://github.com/pmur002/dvir-report/releases/tag/v1">github</a>.
+    </li>
+    <li>
+      This report was generated within a 
+      <a href="https://www.docker.com/">Docker</a> container.
+      The Docker command to build the report is included in the Makefile above.
+      The Docker image for the container is available from
+      <a href="https://hub.docker.com/r/pmur002/dvir/">Docker Hub</a>;
+      alternatively, the image can be rebuilt from its 
+      <a href="Dockerfile">Dockerfile</a>.
+    </li>
+  </ul>
+
+  <h2>How to cite this document</h2>
+  <p>
+    Murrell, P. (2018). "Revisiting Mathematical Equations in R: the 'dvir' package" 
+    Technical Report 2018-??, Department of Statistics, The University of Auckland. 
+    [ <a href="how-to-cite.bib">bib</a> ] 
+  </p>
+
+  <h2><a name="references">References</a></h2>
+  <ul style="list-style-type: none">
+    <li>
+      <a name="R"/>
+    </li>
+    <li>
+      <a name="doi:10.1080/10618600.2000.10474900"/>
+    </li>
+  </ul>
+
+  <hr/>
+  <p>
+    <a rel="license"
+    href="http://creativecommons.org/licenses/by/4.0/"><img class="CC"
+    alt="Creative Commons License" style="border-width:0"
+    src="https://i.creativecommons.org/l/by/4.0/88x31.png"/></a><br/><span
+    xmlns:dct="http://purl.org/dc/terms/"
+    property="dct:title">This document</span>
+    by <span xmlns:cc="http://creativecommons.org/ns#"
+    property="cc:attributionName">Paul
+    Murrell</span> is licensed under a <a rel="license"
+    href="http://creativecommons.org/licenses/by/4.0/">Creative
+    Commons Attribution 4.0 International License</a>.
+  </p>
+
+  <script><![CDATA[
+  // Use async/await so that PDF files loaded one at a time
+  async function loadPDFs() {
+    var pdfcanvas = document.querySelectorAll("canvas.pdf");
+    var i;
+    for (i=0; i < pdfcanvas.length; i++) {
+        var canvas = pdfcanvas[i];
+        var canvasid = canvas.id;
+        console.log("loop" + canvasid);
+        var pdf = await pdfjsLib.getDocument(canvasid + '.pdf');
+        var page = await pdf.getPage(1);
+        console.log("pdf" + canvasid);
+        var scale = canvas.getAttribute("scale");
+        if (!scale) {
+            scale = 100/72;
+        }
+        var viewport = page.getViewport(scale);
+        var context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        var renderContext = {
+            canvasContext: context,
+            viewport: viewport
+        };
+        page.render(renderContext);
+    }
+  }
+  loadPDFs();
+  ]]>
+  </script>
+
+</body>
+</html>
