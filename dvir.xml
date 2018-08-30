@@ -1,68 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <html>
   <head>
-<style type="text/css">
-.knitr .inline {
-  background-color: #f7f7f7;
-  border:solid 1px #B0B0B0;
-}
-.error {
-	font-weight: bold;
-	color: #FF0000;
-}
-.warning {
-	font-weight: bold;
-}
-.message {
-	font-style: italic;
-}
-.source, .output, .warning, .error, .message {
-	padding: 0 1em;
-  border:solid 1px #F7F7F7;
-}
-.source {
-  background-color: #f5f5f5;
-}
-.rimage .left {
-  text-align: left;
-}
-.rimage .right {
-  text-align: right;
-}
-.rimage .center {
-  text-align: center;
-}
-.hl.num {
-  color: #AF0F91;
-}
-.hl.str {
-  color: #317ECC;
-}
-.hl.com {
-  color: #AD95AF;
-  font-style: italic;
-}
-.hl.opt {
-  color: #000000;
-}
-.hl.std {
-  color: #585858;
-}
-.hl.kwa {
-  color: #295F94;
-  font-weight: bold;
-}
-.hl.kwb {
-  color: #B05A65;
-}
-.hl.kwc {
-  color: #55aa55;
-}
-.hl.kwd {
-  color: #BC5A65;
-  font-weight: bold;
-}
-</style>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <style type="text/css">
     @media print {
       body { }
@@ -90,14 +28,14 @@
     }
   </style>
     <!-- PDFjs code (more at the end of the document) -->
-    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"/>
   </head>
   <body>
-    <h1>Revisiting Mathematical Equations in R: <br>The 'dvir' package</h1>
+    <h1>Revisiting Mathematical Equations in R: <br/>The 'dvir' package</h1>
     <p>
       <span style="font-style: italic">by Paul Murrell</span>
       <a href="http://orcid.org">
-        <img alt="" src="https://www.stat.auckland.ac.nz/~paul/ORCID/ORCiD.png" style="width: 16px; height: 16px; vertical-align: middle">
+        <img alt="" src="https://www.stat.auckland.ac.nz/~paul/ORCID/ORCiD.png" style="width: 16px; height: 16px; vertical-align: middle"/>
       </a>
       <span style="font-family: mono; font-size: small">
         <a href="http://orcid.org/0000-0002-3224-8858">http://orcid.org/0000-0002-3224-8858</a>
@@ -105,17 +43,26 @@
     </p>
     <p class="date">
     Version 1:
-Thursday 30 August 2018
+    <rcode echo="FALSE" results="asis"><![CDATA[
+cat(format(Sys.Date(), "%A %d %B %Y"))
+    ]]></rcode>
   </p>
-
-
-    <hr>
-    <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img class="CC" alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a><br><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">This document</span>
+    <rcode id="init" echo="FALSE" message="FALSE" results="hide"><![CDATA[
+opts_chunk$set(comment=" ", tidy=FALSE)
+options(width=100)
+## For wonky desktop set up
+options(bitmapType="cairo")
+  ]]></rcode>
+    <rcode echo="FALSE"><![CDATA[
+    library(grid)
+  ]]></rcode>
+    <hr/>
+    <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img class="CC" alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"/></a><br/><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">This document</span>
     by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">Paul
     Murrell</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative
     Commons Attribution 4.0 International License</a>.
   </p>
-    <hr>
+    <hr/>
     <p>
     This report describes an R package called 'dvir' that aims
     to use TeX as a layout engine, but performs all rendering 
@@ -164,7 +111,17 @@ Thursday 30 August 2018
     annotate a plot with mathematical equations
     (<a href="#doi:10.1080/10618600.2000.10474900">Murrell and Ihaka, 2000</a>)
   </p>
-<div class="chunk" id="unnamed-chunk-3"><div class="rimage default"><img src="figure/unnamed-chunk-3-1.png" title="plot of chunk unnamed-chunk-3" alt="plot of chunk unnamed-chunk-3" class="plot" /></div></div>
+    <rcode echo="FALSE" fig.height="4" dpi="100"><![CDATA[
+library(lattice)
+x <- seq(-4, 4, length.out=100)
+y <- dnorm(x)
+xyplot(y ~ x, type="l", ylim=c(0, .6),
+       panel=function(...) {
+           panel.xyplot(...)
+           ltext(0, .5, 
+                 expression(g(x) == frac(1, sigma*sqrt(2*pi))*e^{-frac(1, 2)*(frac(x - mu, sigma))^2}))
+       })
+  ]]></rcode>
     <p>
     The basic text-drawing functions in R graphics all accept,
     in addition to a simple character value, an R expression.
@@ -178,11 +135,11 @@ Thursday 30 August 2018
     The following R code provides a simple
     example and the result is shown below the code.
   </p>
-<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">expr</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">expression</span><span class="hl std">(</span><span class="hl kwd">bgroup</span><span class="hl std">(</span><span class="hl str">&quot;(&quot;</span><span class="hl std">,</span> <span class="hl kwd">frac</span><span class="hl std">(x</span> <span class="hl opt">-</span> <span class="hl std">mu, sigma),</span> <span class="hl str">&quot;)&quot;</span><span class="hl std">))</span>
-<span class="hl kwd">library</span><span class="hl std">(grid)</span>
-<span class="hl kwd">grid.text</span><span class="hl std">(expr)</span>
-</pre></div>
-</div><div class="rimage default"><img src="figure/unnamed-chunk-4-1.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" class="plot" /></div></div>
+    <rcode fig.width="1" fig.height="1"><![CDATA[
+expr <- expression(bgroup("(", frac(x - mu, sigma), ")"))
+library(grid)
+grid.text(expr)
+  ]]></rcode>
     <p>
     The algorithm used to draw the mathematical equations in R attempts
     to mimic the algorithm used by TeX, but unfortunately the result is 
@@ -195,24 +152,32 @@ Thursday 30 August 2018
     extension (<a href="#pkg:fontcm">Chang et al., 2014</a>) to the 'extrafont' package 
     (<a href="#pkg:extrafont">Chang, 2014</a>), as shown below.  
   </p>
-<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(extrafont)</span>
-<span class="hl kwd">font_install</span><span class="hl std">(</span><span class="hl str">'fontcm'</span><span class="hl std">)</span>
-<span class="hl kwd">loadfonts</span><span class="hl std">(</span><span class="hl str">&quot;pdf&quot;</span><span class="hl std">)</span>
-<span class="hl kwd">pdf</span><span class="hl std">(</span><span class="hl str">&quot;fontcm.pdf&quot;</span><span class="hl std">,</span> <span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">height</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
-<span class="hl kwd">grid.text</span><span class="hl std">(expr,</span>
-          <span class="hl kwc">gp</span><span class="hl std">=</span><span class="hl kwd">gpar</span><span class="hl std">(</span><span class="hl kwc">fontfamily</span><span class="hl std">=</span><span class="hl str">&quot;CM Roman&quot;</span><span class="hl std">))</span>
-<span class="hl kwd">dev.off</span><span class="hl std">()</span>
-<span class="hl kwd">embed_fonts</span><span class="hl std">(</span><span class="hl str">&quot;fontcm.pdf&quot;</span><span class="hl std">,</span> <span class="hl kwc">outfile</span><span class="hl std">=</span><span class="hl str">&quot;fontcm-embed.pdf&quot;</span><span class="hl std">)</span>
-</pre></div>
-</div></div>
-    <canvas class="pdf" id="fontcm-embed"></canvas>
+    <rcode fig.keep="none" results="hide" message="FALSE"><![CDATA[
+library(extrafont)
+font_install('fontcm')
+loadfonts("pdf")
+pdf("fontcm.pdf", width=1, height=1)
+grid.text(expr,
+          gp=gpar(fontfamily="CM Roman"))
+dev.off()
+embed_fonts("fontcm.pdf", outfile="fontcm-embed.pdf")
+  ]]></rcode>
+    <canvas class="pdf" id="fontcm-embed"/>
     <p>
     While this shows a small improvement (the greek symbols are
     TeX's math italic variants),
     it is still some distance from the TeX result, which is shown below.
   </p>
-
-    <canvas class="pdf" id="fragment" scale="2"></canvas>
+    <rcode echo="FALSE"><![CDATA[
+writeLines(c("\\documentclass{standalone}",
+             "\\begin{document}",
+             "$(\\frac{x - \\mu}{\\sigma})$",
+             "\\end{document}"),
+           "fragment.tex")
+system("latex fragment.tex")
+system("dvipdfm fragment.dvi")
+  ]]></rcode>
+    <canvas class="pdf" id="fragment" scale="2"/>
     <p>
     A different approach to including mathematical equations within R plots
     is to use the 'tikzDevice' package.  This allows us to specify an
@@ -220,28 +185,30 @@ Thursday 30 August 2018
     TeX syntax within character values.
     For example, we can write code like the following.
   </p>
-<div class="chunk" id="unnamed-chunk-7"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.text</span><span class="hl std">(</span><span class="hl str">&quot;$\\frac{x - \\mu}{\\sigma}$&quot;</span><span class="hl std">)</span>
-</pre></div>
-</div></div>
+    <rcode eval="FALSE"><![CDATA[
+grid.text("$\\frac{x - \\mu}{\\sigma}$")
+  ]]></rcode>
     <p>
     The following code reproduces the plot from the start of this section
     with the full Gaussian function annotation.
   </p>
-<div class="chunk" id="unnamed-chunk-8"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(tikzDevice)</span>
-<span class="hl kwd">options</span><span class="hl std">(</span><span class="hl kwc">tikzDocumentDeclaration</span> <span class="hl std">=</span>
-          <span class="hl str">&quot;\\documentclass[12pt]{article}&quot;</span><span class="hl std">)</span>
-<span class="hl kwd">tikz</span><span class="hl std">(</span><span class="hl str">&quot;tikz.tex&quot;</span><span class="hl std">,</span> <span class="hl kwc">standAlone</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">height</span><span class="hl std">=</span><span class="hl num">4</span><span class="hl std">)</span>
-<span class="hl std">tex</span> <span class="hl kwb">&lt;-</span> <span class="hl str">&quot;$g(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{1}{2}(\\frac{x - \\mu}{\\sigma})}$&quot;</span>
-<span class="hl kwd">xyplot</span><span class="hl std">(y</span> <span class="hl opt">~</span> <span class="hl std">x,</span> <span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;l&quot;</span><span class="hl std">,</span> <span class="hl kwc">ylim</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">,</span> <span class="hl num">.6</span><span class="hl std">),</span>
-       <span class="hl kwc">panel</span><span class="hl std">=</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">...</span><span class="hl std">) {</span>
-           <span class="hl kwd">panel.xyplot</span><span class="hl std">(...)</span>
-           <span class="hl kwd">ltext</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">,</span> <span class="hl num">.5</span><span class="hl std">, tex)</span>
-       <span class="hl std">})</span>
-<span class="hl kwd">dev.off</span><span class="hl std">()</span>
-</pre></div>
-</div></div>
-
-    <canvas class="pdf" id="tikz"></canvas>
+    <rcode results="hide"><![CDATA[
+library(tikzDevice)
+options(tikzDocumentDeclaration =
+          "\\documentclass[12pt]{article}")
+tikz("tikz.tex", standAlone=TRUE, height=4)
+tex <- "$g(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}e^{-\\frac{1}{2}(\\frac{x - \\mu}{\\sigma})}$"
+xyplot(y ~ x, type="l", ylim=c(0, .6),
+       panel=function(...) {
+           panel.xyplot(...)
+           ltext(0, .5, tex)
+       })
+dev.off()
+  ]]></rcode>
+    <rcode echo="FALSE"><![CDATA[
+system("pdflatex tikz.tex")
+  ]]></rcode>
+    <canvas class="pdf" id="tikz"/>
     <p>
     This produces a full-quality TeX version of the mathematical equation
     because the 'tikzDevice' package generates a TeX version (actually
@@ -304,19 +271,19 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     for example, TeX mathematical expressions.
     The following code provides a simple demonstration.
   </p>
-<div class="chunk" id="unnamed-chunk-10"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(dvir)</span>
-</pre></div>
-</div></div>
-<div class="chunk" id="grid.latex"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.latex</span><span class="hl std">(</span><span class="hl str">&quot;$x - \\mu$&quot;</span><span class="hl std">)</span>
-</pre></div>
-</div><div class="rimage default"><img src="figure/grid.latex-1.png" title="plot of chunk grid.latex" alt="plot of chunk grid.latex" class="plot" /></div></div>
+    <rcode><![CDATA[
+library(dvir)
+  ]]></rcode>
+    <rcode id="grid.latex" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE"><![CDATA[
+grid.latex("$x - \\mu$")
+  ]]></rcode>
     <p>
     It is also possible to use standard LaTeX commands, as in the following
     example.
   </p>
-<div class="chunk" id="fontfaces"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.latex</span><span class="hl std">(</span><span class="hl str">&quot;plain, {\\it italic}, and {\\bf bold}&quot;</span><span class="hl std">)</span>
-</pre></div>
-</div><div class="rimage default"><img src="figure/fontfaces-1.png" title="plot of chunk fontfaces" alt="plot of chunk fontfaces" class="plot" /></div></div>
+    <rcode id="fontfaces" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE"><![CDATA[
+grid.latex("plain, {\\it italic}, and {\\bf bold}")
+  ]]></rcode>
     <p>
     The following code shows the how the 
     <code>grid.latex</code> function can be used to generate a complete
@@ -324,32 +291,32 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     (the LaTeX string <code>tex</code> 
     was defined in the 'tikzDevice' example above).
   </p>
-<div class="chunk" id="grid.latex.plot"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">xyplot</span><span class="hl std">(y</span> <span class="hl opt">~</span> <span class="hl std">x,</span> <span class="hl kwc">type</span><span class="hl std">=</span><span class="hl str">&quot;l&quot;</span><span class="hl std">,</span> <span class="hl kwc">ylim</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl num">0</span><span class="hl std">,</span> <span class="hl num">.6</span><span class="hl std">),</span>
-       <span class="hl kwc">panel</span><span class="hl std">=</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">...</span><span class="hl std">) {</span>
-           <span class="hl kwd">panel.xyplot</span><span class="hl std">(...)</span>
-           <span class="hl kwd">grid.latex</span><span class="hl std">(tex,</span> <span class="hl num">0</span><span class="hl std">,</span> <span class="hl num">.5</span><span class="hl std">,</span> <span class="hl kwc">default.units</span><span class="hl std">=</span><span class="hl str">&quot;native&quot;</span><span class="hl std">)</span>
-       <span class="hl std">})</span>
-</pre></div>
-</div><div class="rimage default"><img src="figure/grid.latex.plot-1.png" title="plot of chunk grid.latex.plot" alt="plot of chunk grid.latex.plot" class="plot" /></div></div>
+    <rcode id="grid.latex.plot" fig.height="4" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE"><![CDATA[
+xyplot(y ~ x, type="l", ylim=c(0, .6),
+       panel=function(...) {
+           panel.xyplot(...)
+           grid.latex(tex, 0, .5, default.units="native")
+       })
+  ]]></rcode>
     <p>
     In the following example, we use the 'xtable' package 
     (<a href="#pkg:xtable">Dahl, 2016</a>) 
     to generate LaTeX code for a table and then 'dvir' to draw 
     the table within a 'lattice' plot.
   </p>
-<div class="chunk" id="unnamed-chunk-11"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(xtable)</span>
-<span class="hl kwd">xyplot</span><span class="hl std">(mpg</span> <span class="hl opt">~</span> <span class="hl std">disp, mtcars,</span>
-       <span class="hl kwc">panel</span><span class="hl std">=</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">...</span><span class="hl std">) {</span>
-           <span class="hl kwd">panel.xyplot</span><span class="hl std">(...)</span>
-           <span class="hl std">tex</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">print</span><span class="hl std">(</span><span class="hl kwd">xtable</span><span class="hl std">(</span><span class="hl kwd">head</span><span class="hl std">(mtcars[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">3</span><span class="hl std">])),</span>
-                        <span class="hl kwc">floating</span><span class="hl std">=</span><span class="hl num">FALSE</span><span class="hl std">)</span>
-           <span class="hl kwd">grid.latex</span><span class="hl std">(tex,</span>
-                      <span class="hl kwc">x</span><span class="hl std">=</span><span class="hl kwd">unit</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl str">&quot;npc&quot;</span><span class="hl std">)</span> <span class="hl opt">-</span> <span class="hl kwd">unit</span><span class="hl std">(</span><span class="hl num">2</span><span class="hl std">,</span> <span class="hl str">&quot;mm&quot;</span><span class="hl std">),</span>
-                      <span class="hl kwc">y</span><span class="hl std">=</span><span class="hl kwd">unit</span><span class="hl std">(</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl str">&quot;npc&quot;</span><span class="hl std">)</span> <span class="hl opt">-</span> <span class="hl kwd">unit</span><span class="hl std">(</span><span class="hl num">2</span><span class="hl std">,</span> <span class="hl str">&quot;mm&quot;</span><span class="hl std">),</span>
-                      <span class="hl kwc">just</span><span class="hl std">=</span><span class="hl kwd">c</span><span class="hl std">(</span><span class="hl str">&quot;right&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;top&quot;</span><span class="hl std">))</span>
-       <span class="hl std">})</span>
-</pre></div>
-</div><div class="rimage default"><img src="figure/unnamed-chunk-11-1.png" title="plot of chunk unnamed-chunk-11" alt="plot of chunk unnamed-chunk-11" class="plot" /></div></div>
+    <rcode results="hide"><![CDATA[
+library(xtable)
+xyplot(mpg ~ disp, mtcars,
+       panel=function(...) {
+           panel.xyplot(...)
+           tex <- print(xtable(head(mtcars[1:3])),
+                        floating=FALSE)
+           grid.latex(tex, 
+                      x=unit(1, "npc") - unit(2, "mm"),
+                      y=unit(1, "npc") - unit(2, "mm"),
+                      just=c("right", "top"))
+       })
+  ]]></rcode>
     <p>
     The <code>grid.latex</code> function is just a thin wrapper around
     a call to LaTeX, which generates a DVI file, followed by calls
@@ -386,60 +353,24 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     word "Hello".  This code has been saved in a text file called
     <code>"simple.tex</code>.
   </p>
-<div class="chunk" id="unnamed-chunk-12"><div class="rcode"><div class="output"><pre class="knitr r">  \documentclass[12pt]{standalone}
-  \begin{document}
-  Hello
-  \end{document}
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+cat(readLines("simple.tex"), sep="\n")
+  ]]></rcode>
     <p>
     If we run <code>latex</code> on that file ...
   </p>
-<div class="chunk" id="unnamed-chunk-13"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">system</span><span class="hl std">(</span><span class="hl str">&quot;latex simple.tex&quot;</span><span class="hl std">)</span>
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+system("latex simple.tex")
+  ]]></rcode>
     <p>
     ... we get a DVI file called
     <code>simple.dvi</code> and the following code reads that DVI
     file into R.
   </p>
-<div class="chunk" id="unnamed-chunk-14"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">dvi</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">readDVI</span><span class="hl std">(</span><span class="hl str">&quot;simple.dvi&quot;</span><span class="hl std">)</span>
-<span class="hl std">dvi</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  pre          version=2, num=25400000, den=473628672, mag=1000,
-               comment= TeX output 2018.08.30:2212
-  bop          counters=1 0 0 0 0 0 0 0 0 0, p=-1
-  down4        a=1069005536
-  push
-  y4           a=-1073741823 
-  down4        a=1073741823
-  push
-  right3       b=-4736287
-  y0 
-  down3        a=546132
-  push
-  push
-  push
-  fnt_def_1    fontnum=14, checksum=1487622411, scale=786432, design=786432,
-               fontname=cmr12
-  fnt_num_14
-  set_char_72  'H'
-  set_char_101 'e'
-  set_char_108 'l'
-  set_char_108 'l'
-  set_char_111 'o'
-  pop
-  pop
-  pop
-  pop
-  pop
-  eop
-  post
-  fnt_def_1    fontnum=14, checksum=1487622411, scale=786432, design=786432,
-               fontname=cmr12
-  post_post
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+dvi <- readDVI("simple.dvi")
+dvi 
+  ]]></rcode>
     <p>
     The <a href="https://web.archive.org/web/20070403030353/http://www.math.umd.edu/~asnowden/comp-cont/dvi.html#right">DVI format</a> 
     is a binary format (<a href="#dviformat">Knuth, 1995</a>), 
@@ -450,41 +381,19 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     a list of 'hexView' "rawFormat" 
     objects ...
   </p>
-<div class="chunk" id="unnamed-chunk-15"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">class</span><span class="hl std">(dvi[[</span><span class="hl num">1</span><span class="hl std">]])</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;flatRawFormat&quot; &quot;rawFormat&quot;
-</pre></div>
-<div class="source"><pre class="knitr r"><span class="hl std">dvi[[</span><span class="hl num">1</span><span class="hl std">]]</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  =======op.opcode 
-   0  :  f7                                                                 |  247                 
-  =======op.opparams.i 
-   1  :  02                                                                 |  2                     
-  =======op.opparams.num 
-   2  :  01 83 92 c0                                                        |  25400000          
-  =======op.opparams.den 
-   6  :  1c 3b 00 00                                                        |  473628672           
-  =======op.opparams.mag 
-  10  :  00 00 03 e8                                                        |  1000                
-  =======op.opparams.comment.length 
-  14  :  1b                                                                 |  27                   
-  =======op.opparams.comment.string 
-  15  :  20 54 65 58 20 6f 75 74 70 75 74 20 32 30 31 38 2e 30 38 2e 33 30  |   TeX output 2018.08.30
-  37  :  3a 32 32 31 32                                                     |  :2212
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+class(dvi[[1]])
+dvi[[1]]
+  ]]></rcode>
     <p>
     ... and it is easy to run through the list of DVI operations simply 
     by calling <code>lapply</code> (or <code>sapply</code>) on this list.
     For example, the following code generates a numeric vector
     containing all of the operation codes from the DVI file.
   </p>
-<div class="chunk" id="unnamed-chunk-16"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">sapply</span><span class="hl std">(dvi,</span> <span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">op</span><span class="hl std">) { hexView</span><span class="hl opt">::</span><span class="hl kwd">blockValue</span><span class="hl std">(op</span><span class="hl opt">$</span><span class="hl std">blocks</span><span class="hl opt">$</span><span class="hl std">op.opcode) })</span>
-</pre></div>
-<div class="output"><pre class="knitr r">   [1] 247 139 160 141 165 160 141 145 161 239 239 159 141 141 141 243 185  72 101 108 108 111 142 142
-  [25] 142 142 142 140 248 243 249
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+sapply(dvi, function(op) { hexView::blockValue(op$blocks$op.opcode) })
+  ]]></rcode>
     <h2>
       <a name="render">4. Rendering DVI files</a>
     </h2>
@@ -493,24 +402,21 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     by converting the DVI instructions
     from a DVI file into 'grid' drawing on an R graphics device.
   </p>
-<div class="chunk" id="grid.dvi"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.dvi</span><span class="hl std">(dvi)</span>
-</pre></div>
-</div><div class="rimage default"><img src="figure/grid.dvi-1.png" title="plot of chunk grid.dvi" alt="plot of chunk grid.dvi" class="plot" /></div></div>
+    <rcode id="grid.dvi" fig.width="1" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE"><![CDATA[
+grid.dvi(dvi)
+  ]]></rcode>
     <p>
     The essential steps in faithfully rendering the DVI file
     are as follows:
   </p>
     <ul>
-      <li>
-<b>coordinate systems</b>: Convert DVI locations and distances
+      <li><b>coordinate systems</b>: Convert DVI locations and distances
       into an R graphics coordinate system
     </li>
-      <li>
-<b>font mappings</b>: Convert DVI font definions into R graphics
+      <li><b>font mappings</b>: Convert DVI font definions into R graphics
       font specifications
     </li>
-      <li>
-<b>character encodings</b>: Convert DVI characters into R character values
+      <li><b>character encodings</b>: Convert DVI characters into R character values
     </li>
     </ul>
     <h3>Coordinate systems</h3>
@@ -519,10 +425,10 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     locations and distances is defined in the first "preamble" operation
     in the DVI file.
   </p>
-<div class="chunk" id="unnamed-chunk-17"><div class="rcode"><div class="output"><pre class="knitr r">  pre          version=2, num=25400000, den=473628672, mag=1000,
-               comment= TeX output 2018.08.30:2212
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+dvitxt <- capture.output(dvi)
+cat(dvitxt[1:2], sep="\n")
+  ]]></rcode>
     <p>
     We multiply a location or distance by the <code>num</code>erator,
     divide by the <code>den</code>ominator, multiply by the
@@ -546,10 +452,10 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     is <code>cmr12</code> (a Computer Modern Roman serif font 
     at 12pt size).
   </p>
-<div class="chunk" id="unnamed-chunk-18"><div class="rcode"><div class="output"><pre class="knitr r">  fnt_def_1    fontnum=14, checksum=1487622411, scale=786432, design=786432,
-               fontname=cmr12
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+fontdef <- grep("fnt_def_1", dvitxt)[1] + 0:1
+cat(dvitxt[fontdef], sep="\n")
+  ]]></rcode>
     <p>
     We must generate an R graphics font specification from just this
     font name, a  task that is complicated by the fact that
@@ -574,83 +480,59 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     Some typical results on an Ubuntu system with TeX Live are shown below.
     First, we have the location of the <code>pdftex.map</code> file ...
   </p>
-<div class="chunk" id="unnamed-chunk-19"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">mapfile</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">system</span><span class="hl std">(</span><span class="hl str">&quot;kpsewhich pdftex.map&quot;</span><span class="hl std">,</span> <span class="hl kwc">intern</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
-<span class="hl std">mapfile</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+mapfile <- system("kpsewhich pdftex.map", intern=TRUE)
+mapfile
+  ]]></rcode>
     <p>
     ... and the line in this file for the <code>cmr12</code> DVI font name
     shows the name of an actual font file at the end of the line ...
   </p>
-<div class="chunk" id="unnamed-chunk-20"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">system</span><span class="hl std">(</span><span class="hl str">&quot;grep ^cmr12 $(kpsewhich pdftex.map)&quot;</span><span class="hl std">,</span> <span class="hl kwc">intern</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;cmr12 CMR12 &lt;cmr12.pfb&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+system("grep ^cmr12 $(kpsewhich pdftex.map)", intern=TRUE)
+  ]]></rcode>
     <p>
     We can get the location of this PFB file ...
   </p>
-<div class="chunk" id="unnamed-chunk-21"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">pfbfile</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">system</span><span class="hl std">(</span><span class="hl str">&quot;kpsewhich cmr12.pfb&quot;</span><span class="hl std">,</span> <span class="hl kwc">intern</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
-<span class="hl std">pfbfile</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+pfbfile <- system("kpsewhich cmr12.pfb", intern=TRUE)
+pfbfile
+  ]]></rcode>
     <p>
     ... and the location of the corresponding AFM file ...
   </p>
-<div class="chunk" id="unnamed-chunk-22"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">afmfile</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">system</span><span class="hl std">(</span><span class="hl str">&quot;kpsewhich cmr12.afm&quot;</span><span class="hl std">,</span> <span class="hl kwc">intern</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
-<span class="hl std">afmfile</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+afmfile <- system("kpsewhich cmr12.afm", intern=TRUE)
+afmfile
+  ]]></rcode>
     <p>
     This gives us enough information to create a Type 1 Font definition
     called <code>"cmr12"</code> in R ...
   </p>
-<div class="chunk" id="unnamed-chunk-23"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">Type1Font</span><span class="hl std">(</span><span class="hl str">&quot;cmr12&quot;</span><span class="hl std">,</span> <span class="hl kwd">rep</span><span class="hl std">(afmfile,</span> <span class="hl num">4</span><span class="hl std">))</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  $family
-  [1] &quot;cmr12&quot;
-  
-  $metrics
-  [1] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [2] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [3] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [4] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [5] &quot;Symbol.afm&quot;                                                          
-  
-  $encoding
-  [1] &quot;default&quot;
-  
-  attr(,&quot;class&quot;)
-  [1] &quot;Type1Font&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+Type1Font("cmr12", rep(afmfile, 4))
+  ]]></rcode>
     <p>
     ... and we can then draw text with 'grid' using that font (on a 
     <code>pdf</code> device) by
     specifying <code>"cmr12"</code> as the font family ...
   </p>
-<div class="chunk" id="unnamed-chunk-24"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">pdf</span><span class="hl std">(</span><span class="hl str">&quot;test.pdf&quot;</span><span class="hl std">,</span> <span class="hl kwc">width</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">,</span> <span class="hl kwc">height</span><span class="hl std">=</span><span class="hl num">.5</span><span class="hl std">)</span>
-<span class="hl kwd">grid.text</span><span class="hl std">(</span><span class="hl str">&quot;Test&quot;</span><span class="hl std">,</span> <span class="hl kwc">gp</span><span class="hl std">=</span><span class="hl kwd">gpar</span><span class="hl std">(</span><span class="hl kwc">fontfamily</span><span class="hl std">=</span><span class="hl str">&quot;cmr12&quot;</span><span class="hl std">))</span>
-<span class="hl kwd">dev.off</span><span class="hl std">()</span>
-</pre></div>
-</div></div>
+    <rcode fig.keep="none" results="hide"><![CDATA[
+pdf("test.pdf", width=1, height=.5)
+grid.text("Test", gp=gpar(fontfamily="cmr12"))
+dev.off()
+  ]]></rcode>
     <p>
     For the resulting
     PDF file to display properly, it is best to embed the fonts
     in the PDF file with the <code>embedFonts</code> function.
     This  requires us to specify the locations of the PFB files to embed.   
   </p>
-<div class="chunk" id="unnamed-chunk-25"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">embedFonts</span><span class="hl std">(</span><span class="hl str">&quot;test.pdf&quot;</span><span class="hl std">,</span> <span class="hl kwc">outfile</span><span class="hl std">=</span><span class="hl str">&quot;test-embed.pdf&quot;</span><span class="hl std">,</span>
-           <span class="hl kwc">options</span><span class="hl std">=</span><span class="hl kwd">paste0</span><span class="hl std">(</span><span class="hl str">&quot;-sFONTPATH=&quot;</span><span class="hl std">, pfbfile))</span>
-</pre></div>
-</div></div>
-    <canvas id="test-embed" class="pdf"></canvas>
+    <rcode><![CDATA[
+embedFonts("test.pdf", outfile="test-embed.pdf",
+           options=paste0("-sFONTPATH=", pfbfile))
+  ]]></rcode>
+    <canvas id="test-embed" class="pdf"/>
     <p>
     The 'dvir' package
     provides a <code>fontPaths</code> function that can generate
@@ -661,11 +543,9 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     and use <code>fontPaths</code> to generate the locations 
     of fonts within that DVI object.
   </p>
-<div class="chunk" id="unnamed-chunk-26"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">fontPaths</span><span class="hl std">(</span><span class="hl kwd">dviGrob</span><span class="hl std">(dvi,</span> <span class="hl kwc">device</span><span class="hl std">=</span><span class="hl str">&quot;pdf&quot;</span><span class="hl std">))</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+fontPaths(dviGrob(dvi, device="pdf"))
+  ]]></rcode>
     <p>
     The <code>postscript</code> graphics device also uses Type 1 fonts,
     so is handled in exactly the same way as the <code>pdf</code> device.
@@ -687,27 +567,18 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     gets used is whatever <code>fontconfig</code> finds as the best
     match.
   </p>
-<div class="chunk" id="unnamed-chunk-27"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">system</span><span class="hl std">(</span><span class="hl str">&quot;fc-match Times&quot;</span><span class="hl std">,</span> <span class="hl kwc">intern</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">)</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;texgyretermes-regular.otf: \&quot;TeX Gyre Termes\&quot; \&quot;Regular\&quot;&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+system("fc-match Times", intern=TRUE)
+  ]]></rcode>
     <p>
     Because R only gives <code>fontconfig</code> a font family, the first
     step is to map the DVI font name to a font family.
     The 'dvir' package does this by looking at the AFM file (found above) and
     extracting the <code>FamilyName</code> field.
   </p>
-<div class="chunk" id="unnamed-chunk-28"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">head</span><span class="hl std">(</span><span class="hl kwd">readLines</span><span class="hl std">(afmfile))</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;StartFontMetrics 2.0&quot;                           
-  [2] &quot;Comment Creation Date: Mon Jul 13 16:17:00 2009&quot;
-  [3] &quot;FontName CMR12&quot;                                 
-  [4] &quot;FullName CMR12&quot;                                 
-  [5] &quot;FamilyName Computer Modern&quot;                     
-  [6] &quot;Weight Medium&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+head(readLines(afmfile))
+  ]]></rcode>
     <p>
     This font family by itself is not specific enough to ensure that 
     <code>fontconfig</code> will find the same font that was used to
@@ -733,20 +604,20 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     to find a font with "family" <code>Computer Modern</code> and
     "postscriptname" <code>CMR12</code>.
   </p>
-    <pre>
-  &lt;dir&gt;/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm&lt;/dir&gt;
-  &lt;match target="pattern"&gt;
-    &lt;test name="family" mode="eq"&gt;
-      &lt;string&gt;Computer Modern CMR12&lt;/string&gt;
-    &lt;/test&gt;
-    &lt;edit name="family" mode="assign" binding="strong"&gt;
-      &lt;string&gt;Computer Modern&lt;/string&gt;
-    &lt;/edit&gt;
-    &lt;edit name="postscriptname" mode="assign" binding="strong"&gt;
-      &lt;string&gt;CMR12&lt;/string&gt;
-    &lt;/edit&gt;
-  &lt;/match&gt;
-  </pre>
+    <pre><![CDATA[
+  <dir>/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm</dir>
+  <match target="pattern">
+    <test name="family" mode="eq">
+      <string>Computer Modern CMR12</string>
+    </test>
+    <edit name="family" mode="assign" binding="strong">
+      <string>Computer Modern</string>
+    </edit>
+    <edit name="postscriptname" mode="assign" binding="strong">
+      <string>CMR12</string>
+    </edit>
+  </match>
+  ]]></pre>
     <p>
     The 'dvir' package generates these font configurations 
     on the fly, as it reads a DVI file, which means that it must
@@ -778,13 +649,10 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     is to correctly generate character values from
     <code>set_char</code> operations.
   </p>
-<div class="chunk" id="unnamed-chunk-29"><div class="rcode"><div class="output"><pre class="knitr r">  set_char_72  'H'
-  set_char_101 'e'
-  set_char_108 'l'
-  set_char_108 'l'
-  set_char_111 'o'
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+setchars <- grep("set_char", dvitxt)
+cat(dvitxt[setchars], sep="\n")
+  ]]></rcode>
     <p>
     As we can see, the DVI file contains instructions such as "typeset character
     72".  How do we interpret the number 72 as a character?  
@@ -799,30 +667,25 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     the thirty-third character is an exclamation sign in <code>cmr12</code>,
     but it is the Greek character omega in <code>cmmi12</code>.
   </p>
-<div class="chunk" id="unnamed-chunk-30"><div class="rcode"><div class="output"><pre class="knitr r">  StartFontMetrics 2.0
-  Comment Creation Date: Mon Jul 13 16:17:00 2009
-  FontName CMR12
-  FullName CMR12
-  FamilyName Computer Modern
-  Weight Medium
-  ...
-  C 33 ; WX 271 ; N exclam ; B 86 0 184 715 ;
-  ...
-  C 72 ; WX 734 ; N H ; B 41 0 692 683 ;
-</pre></div>
-</div></div>
-<div class="chunk" id="unnamed-chunk-31"><div class="rcode"><div class="output"><pre class="knitr r">  StartFontMetrics 2.0
-  Comment Creation Date: Mon Jul 13 16:17:00 2009
-  FontName CMMI12
-  FullName CMMI12
-  FamilyName Computer Modern
-  Weight Medium
-  ...
-  C 33 ; WX 610 ; N omega ; B 12 -10 594 442 ;
-  ...
-  C 72 ; WX 811 ; N H ; B 46 0 858 683 ;
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+afm <- readLines(afmfile)
+cat(head(afm), 
+    "...",
+    afm[grep("^C ", afm)][34],
+    "...",
+    afm[grep("^C ", afm)][73],
+    sep="\n")
+  ]]></rcode>
+    <rcode echo="FALSE"><![CDATA[
+afmfile2 <- system("kpsewhich cmmi12.afm", intern=TRUE)
+afm2 <- readLines(afmfile2)
+cat(head(afm2), 
+    "...",
+    afm2[grep("^C ", afm2)][34],
+    "...",
+    afm2[grep("^C ", afm2)][73],
+    sep="\n")
+  ]]></rcode>
     <p>
     We saw in the previous section that we can specify the current
     DVI font for R graphics devices, but we still need to select
@@ -848,11 +711,9 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     we now have almost everything we need.  We can take the character number
     in the DVI file and convert it to an ASCII character value ...
   </p>
-<div class="chunk" id="unnamed-chunk-32"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">rawToChar</span><span class="hl std">(</span><span class="hl kwd">as.raw</span><span class="hl std">(</span><span class="hl num">72</span><span class="hl std">))</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;H&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+rawToChar(as.raw(72))
+  ]]></rcode>
     <p>
     ... and we can rely on the character value <code>"H"</code>
     being converted to the number 72 to find the seventy-second
@@ -887,52 +748,28 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     create.  For example, the first few characters in the 
     <code>cmr12</code> font are shown below ...
   </p>
-<div class="chunk" id="unnamed-chunk-33"><div class="rcode"><div class="output"><pre class="knitr r">  StartFontMetrics 2.0
-  Comment Creation Date: Mon Jul 13 16:17:00 2009
-  FontName CMR12
-  FullName CMR12
-  FamilyName Computer Modern
-  Weight Medium
-  ...
-  C 0 ; WX 611 ; N Gamma ; B 41 0 570 681 ;
-  C 1 ; WX 815 ; N Delta ; B 46 0 769 714 ;
-  C 2 ; WX 761 ; N Theta ; B 54 -21 707 704 ;
-  C 3 ; WX 679 ; N Lambda ; B 31 0 648 714 ;
-  C 4 ; WX 652 ; N Xi ; B 41 0 611 678 ;
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+cat(head(afm), 
+    "...",
+    afm[grep("^C ", afm)][1:5],
+    sep="\n")
+  ]]></rcode>
     <p>
     ... and this produces an encoding file that begins like this ...
   </p>
-<div class="chunk" id="unnamed-chunk-34"><div class="rcode"><div class="output"><pre class="knitr r">  /cmr12Encoding [
-  /Gamma
-  /Delta
-  /Theta
-  /Lambda
-  /Xi
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+encfile <- dvir:::fontEnc(afmfile)[1]
+enc <- readLines(encfile)
+cat(head(enc),
+    sep="\n")
+  ]]></rcode>
     <p>
     ... and this encoding file, along with the AFM file,
     is used to define a Type 1 Font with the correct encoding ...
   </p>
-<div class="chunk" id="unnamed-chunk-35"><div class="rcode"><div class="output"><pre class="knitr r">  $family
-  [1] &quot;cmr12&quot;
-  
-  $metrics
-  [1] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [2] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [3] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [4] &quot;/usr/share/texlive/texmf-dist/fonts/afm/public/amsfonts/cm/cmr12.afm&quot;
-  [5] &quot;Symbol.afm&quot;                                                          
-  
-  $encoding
-  [1] &quot;/tmp/RtmpN9zwZd/cmr12.enc&quot;
-  
-  attr(,&quot;class&quot;)
-  [1] &quot;Type1Font&quot;
-</pre></div>
-</div></div>
+    <rcode echo="FALSE"><![CDATA[
+Type1Font("cmr12", rep(afmfile, 4), encoding=encfile)    
+  ]]></rcode>
     <p>
     In the case of characters in the 
     english alphabet, on the <code>pdf</code> and <code>postscript</code>
@@ -963,9 +800,9 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     <code>summationtext</code>, which will draw a summation glyph like the
     one below.
   </p>
-<div class="chunk" id="summation"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">grid.latex</span><span class="hl std">(</span><span class="hl str">&quot;$\\sum$&quot;</span><span class="hl std">)</span>
-</pre></div>
-</div><div class="rimage default"><img src="figure/summation-1.png" title="plot of chunk summation" alt="plot of chunk summation" class="plot" /></div></div>
+    <rcode id="summation" fig.width="1" fig.height=".5" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE"><![CDATA[
+grid.latex("$\\sum$")    
+  ]]></rcode>
     <p>
     Unfortunately, 
     the situation is completely different for Cairo-based graphics devices.
@@ -977,11 +814,9 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     R character value.  For example, we can specify a Greek omega character
     with <code>"\U03C9"</code>.
   </p>
-<div class="chunk" id="unnamed-chunk-36"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl str">&quot;\U03C9&quot;</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;ω&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+"\U03C9"
+  ]]></rcode>
     <p>
     The downside of the Cairo-based devices 
     is that, from R, we cannot control the 
@@ -1019,15 +854,10 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     Computer Modern Math Extensions, e.g.,
     <code>cmex10</code>.
   </p>
-<div class="chunk" id="unnamed-chunk-37"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">dvir</span><span class="hl opt">:::</span><span class="hl kwd">rawToUTF8</span><span class="hl std">(</span><span class="hl kwd">as.raw</span><span class="hl std">(</span><span class="hl num">33</span><span class="hl std">),</span> <span class="hl str">&quot;CMR&quot;</span><span class="hl std">)</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;!&quot;
-</pre></div>
-<div class="source"><pre class="knitr r"><span class="hl std">dvir</span><span class="hl opt">:::</span><span class="hl kwd">rawToUTF8</span><span class="hl std">(</span><span class="hl kwd">as.raw</span><span class="hl std">(</span><span class="hl num">33</span><span class="hl std">),</span> <span class="hl str">&quot;CMMI&quot;</span><span class="hl std">)</span>
-</pre></div>
-<div class="output"><pre class="knitr r">  [1] &quot;ω&quot;
-</pre></div>
-</div></div>
+    <rcode><![CDATA[
+dvir:::rawToUTF8(as.raw(33), "CMR")
+dvir:::rawToUTF8(as.raw(33), "CMMI")
+  ]]></rcode>
     <p>
     The <code>cmex10</code>
     font is an exceptional case.  
@@ -1215,8 +1045,7 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
     <h2>
       <a name="references">8. References</a>
     </h2>
-    <dl>
-<dt>
+    <dl><dt>
 [<a name="pkg:extrafont">Chang, 2014</a>]
 </dt>
 <dd>
@@ -1425,13 +1254,13 @@ Xie, Y. (2015).
 
 </dd>
 </dl>
-    <hr>
-    <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img class="CC" alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a><br><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">This document</span>
+    <hr/>
+    <p><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img class="CC" alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"/></a><br/><span xmlns:dct="http://purl.org/dc/terms/" property="dct:title">This document</span>
     by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">Paul
     Murrell</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative
     Commons Attribution 4.0 International License</a>.
   </p>
-    <script>
+    <script><![CDATA[
   // Use async/await so that PDF files loaded one at a time
   async function loadPDFs() {
     var pdfcanvas = document.querySelectorAll("canvas.pdf");
@@ -1459,6 +1288,6 @@ Xie, Y. (2015).
     }
   }
   loadPDFs();
-  </script>
+  ]]></script>
   </body>
 </html>

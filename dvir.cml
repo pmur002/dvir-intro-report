@@ -29,7 +29,7 @@
   </style>
 
   <!-- PDFjs code (more at the end of the document) -->
-  <script src="http://mozilla.github.io/pdf.js/build/pdf.js"></script>
+  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
 
 </head>
 <body>
@@ -81,7 +81,8 @@ options(bitmapType="cairo")
 
   <h2><a name="intro">Mathematical Equations in R</a></h2>
   <p>
-    The image below shows a 'lattice' (CITE) line plot of the Standard Normal
+    The image below shows a 'lattice' (<a href="#pkg:lattice"/>) 
+    line plot of the Standard Normal
     probability distribution function, with a text annotation
     showing the general form of the Gaussian function.
     This image was drawn with R (<a href="#R"/>) using
@@ -110,29 +111,31 @@ xyplot(y ~ x, type="l", ylim=c(0, .6),
     and certain functions, such as <code>frac</code> and <code>sqrt</code>
     treated as layout instructions similar to the
     <code>\frac</code> and <code>\sqrt</code> operators in TeX mathematical
-    expressions (CITE TeX).  The following R code provides a simple
+    expressions (<a href="#Knuth:1986:TEX:1102013"/>).  
+    The following R code provides a simple
     example and the result is shown below the code.
   </p>
   <rcode fig.width="1" fig.height="1">
-## expr <- expression(frac(1, sigma*sqrt(2*pi)))
 expr <- expression(bgroup("(", frac(x - mu, sigma), ")"))
 library(grid)
 grid.text(expr)
   </rcode>
   <p>
     The algorithm used to draw the mathematical equations in R attempts
-    to mimic the algorithm used by TeX (CITE), but unfortunately the result is 
+    to mimic the algorithm used by TeX, but unfortunately the result is 
     nowhere near the quality of the real thing.  
   </p>
   <p>
     One significant difference
     arises from the fact that R does not use the TeX math fonts, but
     it is possible to make use of the TeX fonts, with the 'fontcm'
-    package (CITE), as shown below.  
+    extension (<a href="#pkg:fontcm"/>) to the 'extrafont' package 
+    (<a href="#pkg:extrafont"/>), as shown below.  
   </p>
   <rcode fig.keep="none" results="hide" message="FALSE">
 library(extrafont)
 font_install('fontcm')
+loadfonts("pdf")
 pdf("fontcm.pdf", width=1, height=1)
 grid.text(expr,
           gp=gpar(fontfamily="CM Roman"))
@@ -141,7 +144,8 @@ embed_fonts("fontcm.pdf", outfile="fontcm-embed.pdf")
   </rcode>
   <canvas class="pdf" id="fontcm-embed"></canvas>
   <p>
-    While this is something of an improvement,
+    While this shows a small improvement (the greek symbols are
+    TeX's math italic variants),
     it is still some distance from the TeX result, which is shown below.
   </p>
   <rcode echo="FALSE">
@@ -165,8 +169,8 @@ system("dvipdfm fragment.dvi")
 grid.text("$\\frac{x - \\mu}{\\sigma}$")
   </rcode>
   <p>
-    The following code reproduces the original plot with the
-    full Gaussian function.
+    The following code reproduces the plot from the start of this section
+    with the full Gaussian function annotation.
   </p>
   <rcode results="hide">
 library(tikzDevice)
@@ -203,7 +207,8 @@ system("pdflatex tikz.tex")
     allows the plot to be normal R graphics with just the equation
     rendered in full-quality TeX layout and fonts.  
     The package is in the early stages of development, but it can
-    reproduce plain LaTeX output within R on a range of graphics devices.
+    reproduce plain LaTeX output within R, on a range of graphics devices,
+    on Linux.
   </p>
   <p>
     The next section describes the convenient 
@@ -240,7 +245,7 @@ embedFonts("dvir.pdf", outfile="dvir-embedded.pdf",
   <p>
     The simplest interface provided by the 'dvir' package
     is the <code>grid.latex</code> function.  The first argument
-    to this function is a chracter value, which is interpreted as LaTeX code.
+    to this function is a character value, which is interpreted as LaTeX code.
     This can be just plain text, but it can also contain,
     for example, TeX mathematical expressions.
     The following code provides a simple demonstration.
@@ -262,9 +267,9 @@ grid.latex("plain, {\\it italic}, and {\\bf bold}")
 
   <p>
     The following code shows the how the 
-    <code>grid.latex</code> function can be used to generate 
-    a mathematical equation within a 'lattice' plot
-    (where the LaTeX string <code>tex</code> 
+    <code>grid.latex</code> function can be used to generate a complete
+    plot with Gaussian function annotation
+    (the LaTeX string <code>tex</code> 
     was defined in the 'tikzDevice' example above).
   </p>
   <rcode id="grid.latex.plot" fig.height="4" dpi="100" dev="png" dev.args="list(type='cairo')" warning="FALSE">
@@ -276,7 +281,8 @@ xyplot(y ~ x, type="l", ylim=c(0, .6),
   </rcode>
 
   <p>
-    In the following example, we use the 'xtable' package (CITE) 
+    In the following example, we use the 'xtable' package 
+    (<a href="#pkg:xtable"/>) 
     to generate LaTeX code for a table and then 'dvir' to draw 
     the table within a 'lattice' plot.
   </p>
@@ -348,7 +354,8 @@ dvi <- readDVI("simple.dvi")
 dvi 
   </rcode>
   <p>
-    The DVI format is a binary format (CITE dvitype source AND https://web.archive.org/web/20070403030353/http://www.math.umd.edu/~asnowden/comp-cont/dvi.html#right AND get local copy of latter), 
+    The <a href="https://web.archive.org/web/20070403030353/http://www.math.umd.edu/~asnowden/comp-cont/dvi.html#right">DVI format</a> 
+    is a binary format (<a href="#dviformat"/>), 
     so 'dvir' uses the 'hexView' 
     package to define memory blocks for each possible DVI operation
     and to read those memory blocks from the DVI file.
@@ -386,16 +393,15 @@ grid.dvi(dvi)
   </p>
   <ul>
     <li>
-      Convert DVI locations and distances into an R graphics coordinate system
-      <br/>(<b>coordinate systems</b>)
+      <b>coordinate systems</b>: Convert DVI locations and distances
+      into an R graphics coordinate system
     </li>
     <li>
-      Convert DVI font definions into R graphics font specifications 
-      <br/>(<b>font mappings</b>)
+      <b>font mappings</b>: Convert DVI font definions into R graphics
+      font specifications
     </li>
     <li>
-      Convert DVI characters into R character values
-      <br/>(<b>character encodings</b>)
+      <b>character encodings</b>: Convert DVI characters into R character values
     </li>
   </ul>
 
@@ -420,7 +426,8 @@ cat(dvitxt[1:2], sep="\n")
     via the <code>unit</code> function.  What the 'dvir' 
     package actually does is calculate a bounding box from
     the DVI operations, create a 'grid' viewport based on the size
-    of that bounding  box, with an x-scale and a y-scale that encompasses
+    of that bounding  box (in mm), 
+    with an x-scale and a y-scale that encompasses
     the DVI operations, and renders the DVI operations using "native" 
     coordinates within the viewport.
   </p>
@@ -533,7 +540,7 @@ fontPaths(dviGrob(dvi, device="pdf"))
   </p>
 
   <p>
-    However, Cairo-based devices (CITE Cairo) 
+    However, Cairo-based devices (<a href="#cairo"/>) 
     (e.g., <code>x11(type="cairo")</code> and
     <code>cairo_pdf</code>) require a different approach to font mapping.
     Specifying a font on these devices 
@@ -607,7 +614,7 @@ head(readLines(afmfile))
     force <code>fontconfig</code> to load these new font configurations.
     This is done via  a fork of the 'gdtools' package, which
     provides a <code>fontconfig_reinit</code> function
-    (see the <a hrec="#requirements"/> Section).
+    (see the <a href="#requirements"/> Section).
   </p>
   <p>
     As well as mapping to the correct font file,
@@ -788,9 +795,6 @@ Type1Font("cmr12", rep(afmfile, 4), encoding=encfile)
 grid.latex("$\\sum$")    
   </rcode>
   <p>
-    TODO: special case zero character
-  </p>
-  <p>
     Unfortunately, 
     the situation is completely different for Cairo-based graphics devices.
   </p>
@@ -808,17 +812,18 @@ grid.latex("$\\sum$")
     The downside of the Cairo-based devices 
     is that, from R, we cannot control the 
     details of the conversions between numbers and characters,
-    like font encodings, as we did for the <code>pdf</code> device.
-    This means that we have to make sure that what we feed into
-    a Cairo-based graphics device is something that will produce 
-    the correct font output.
+    such as character encodings, as we did for the <code>pdf</code> device.
+    This means that we have to make sure that the 
+    R character value that we feed into
+    a Cairo-based graphics device is something that will select the
+    correct glyph from the current font.
   </p>
   <p>
     The approach taken by the 'dvir' package is to convert DVI
     character numbers into UNICODE character values and rely on Cairo
     to map the UNICODE values to the correct font glyphs.  For example, 72 is
     converted into "\U0048" (the UNICODE code point for "H") and
-    Cairo maps that UNICODE code point to the glyph "H" in the current font.
+    Cairo maps that UNICODE code point to an 'H' glyph in the current font.
   </p>
   <p>
     This approach still requires a conversion from DVI character numbers to
@@ -858,7 +863,7 @@ dvir:::rawToUTF8(as.raw(33), "CMMI")
     The solution to this problem in 'dvir' is to provide a customised
     font called <code>cmexunicode10</code>.  This is the same as the
     <code>cmex10</code> font, but all of the glyphs in the font
-    have been renamed to use the same glyph names as <code>cmr12</code>.
+    have been renamed to use the same character names as <code>cmr12</code>.
     The conversion from DVI number to UTF-8 that is 
     used for <code>cmex10</code> is the same as the conversion that
     is used for <code>cmr12</code>, but the glyphs in the two fonts
@@ -898,11 +903,6 @@ dvir:::rawToUTF8(as.raw(33), "CMMI")
     modified in the <code>cmexunicode10</code> font).
   </p>
 
-
-  <p>
-    TODO: Make sure that tests in DVI/Test/test.R work with the 'dvir' package.
-  </p>
-
   <h2><a name="discussion">Discussion</a></h2>
   <p>
     The 'dvir' package is in an early development stage.
@@ -915,36 +915,84 @@ dvir:::rawToUTF8(as.raw(33), "CMMI")
     (and each filled rectangle) as a separate 'grid' grob.
   </p>
   <p>
+    Nevertheless, for this limited set of conditions, and assuming time
+    is not critical, the 'dvir' package does produce full-quality 
+    TeX layout and fonts.
+  </p>
+  <p>
     There are many ways in which the basic functionality of the
     'dvir' package could be extended. 
+    Getting the package working on Windows would be  big step
+    forward, as would support for a wider range of graphics devices,
+    especially the <code>svg</code> device.
+    Extending the range of supported fonts would also be useful,
+    particularly to fonts outside of the standard TeX Computer
+    Modern fonts and/or to other font types like True Type and Open
+    Type fonts.
+    It would be interesting to look at extending the package to
+    support multi-page DVI files and to design support for 
+    <code>xxx<i>i</i></code> operations (TeX <code>\special</code> commands).
+    For example, it might be possible to support the LaTeX
+    <code>xcolor</code> package or the <code>graphicx</code> package
+    for included graphics.
+    Another interesting question would be how to combine the drawing
+    of DVI output with normal 'grid' text output, with particular
+    attention to aligning baselines.
+  </p>
+
+  <h3>Related work</h3>
+  <p>
+    Apart from the "plotmath" facility and the
+    'tikzDevice' package mentioned in the 
+    <a href="#intro"/> Section, another TeX-related R package
+    is the 'texPreview' package (<a href="#pkg:texPreview"/>).
+    This package automates the generation of PDF, PNG, or SVG images
+    from LaTeX code.  It is then possible to import the resulting image
+    into R and draw it, but the quality of the result is unlikely to
+    be ideal because of scaling of raster images (in the case of PNG)
+    or because of conversion to outlines rather than real fonts
+    (in the case of vector images).
+    Another package that works explicitly with DVI files is 
+    Duncan Murdoch's 'patchDVI' (<a href="#pkg:patchDVI"/>).  
+    The aim of that package is to
+    assist with editing and debugging 'Sweave' (<a href="#pkg:Sweave"/>) and 
+    'knitr' (<a href="#pkg:knitr"/>)
+    documents by modifying the DVI file to allow links between the
+    source document and the final output.  It does not attempt
+    to render the DVI file.  
   </p>
   <p>
-    support for other devices, esp Windows (and SVG output ?) - 
-    support for \specials ? (all sorts of things here, including
-    PGF/TikZ support!?) - handle fonts (in DVI) other
-    than standard TeX ones - handle fonts other than Type 1 (!) - 
-    handle multi-page DVI files - support
-    ALL DVI operations (e.g., vrule, nop) - provide extension 
-    mechanism for third parties to add handling of \specials -
-    allow user to specify font mapping file
+    As demonstrated in one of the early
+    examples, packages that generate LaTeX code are potentially useful 
+    for providing input to the <code>grid.latex</code> function in 'dvir'.
+    Examples include 'xtable', and the <code>latex</code> function from the 
+    'Hmisc' (<a href="#pkg:Hmisc"/>) package. 
   </p>
   <p>
-    Acknowledge Duncan Murdoch's 'patchDVI' package
-  </p>
-  <p>
-    Acknowledge matplotlib dviread package 
-    https://matplotlib.org/devdocs/_modules/matplotlib/dviread.html
+    Outside of R, there is a module for the Python library 
+    matplotlib (<a href="#Hunter:2007"/>) called <code>dviread</code> 
+    (<a href="#dviread"/>).
+    This appears to take a similar approach to the 'dvir' package.
+    It reads the raw DVI file and attempts to access the exact fonts
+    and encodings to produce high-quality TeX output, though with
+    similar limitations to 'dvir'.  In some ways
+    this is more like the 'tikzDevice' approach because the effect
+    is applied to an entire plot at once, although it is closer to
+    'dvir' in the sense that the effect only applies to text labels
+    within the plot.  
   </p>
 
   <h2><a name="requirements">Technical requirements</a></h2>
   <p>
     The examples and discussion in this document relate to <a
-    href="https://github.com/pmur002/dvir/releases/tag/v0.1-0">version
-    0.1-0</a> of the 'dvir' package.
-  </p>
-  <p>
-    AND fork of gdtools
-    AND recent hexView (for integer3 support)
+    href="https://github.com/pmur002/dvir/releases/tag/v0.1-1">version
+    0.1-1</a> of the 'dvir' package,
+    <a href="https://github.com/pmur002/hexview/releases/tag/v0.3-4">version
+    0.3-4</a> of the 'hexView' package, and 
+    <a 
+    href="https://github.com/pmur002/gdtools/releases/tag/v0.1.7.9001">version
+    0.1.7.9001</a> of the 'gdtools' package (which is a fork of the
+    <a href="https://github.com/davidgohel/gdtools">original package</a>).
   </p>
   <p>
     This report was generated within a Docker container
@@ -985,7 +1033,7 @@ dvir:::rawToUTF8(as.raw(33), "CMMI")
   <h2>How to cite this document</h2>
   <p>
     Murrell, P. (2018). "Revisiting Mathematical Equations in R: the 'dvir' package" 
-    Technical Report 2018-??, Department of Statistics, The University of Auckland. 
+    Technical Report 2018-08, Department of Statistics, The University of Auckland. 
     [ <a href="how-to-cite.bib">bib</a> ] 
   </p>
 
@@ -996,6 +1044,48 @@ dvir:::rawToUTF8(as.raw(33), "CMMI")
     </li>
     <li>
       <a name="doi:10.1080/10618600.2000.10474900"/>
+    </li>
+    <li>
+      <a name="pkg:lattice"/>
+    </li>
+    <li>
+      <a name="Knuth:1986:TEX:1102013"/>
+    </li>
+    <li>
+      <a name="pkg:fontcm"/>
+    </li>
+    <li>
+      <a name="pkg:extrafont"/>
+    </li>
+    <li>
+      <a name="pkg:xtable"/>
+    </li>
+    <li>
+      <a name="dviformat"/>
+    </li>
+    <li>
+      <a name="cairo"/>
+    </li>
+    <li>
+      <a name="pkg:texPreview"/>
+    </li>
+    <li>
+      <a name="pkg:patchDVI"/>
+    </li>
+    <li>
+      <a name="pkg:knitr"/>
+    </li>
+    <li>
+      <a name="pkg:Sweave"/>
+    </li>
+    <li>
+      <a name="pkg:Hmisc"/>
+    </li>
+    <li>
+      <a name="Hunter:2007"/>
+    </li>
+    <li>
+      <a name="dviread"/>
     </li>
   </ul>
 

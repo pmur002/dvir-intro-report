@@ -4,7 +4,7 @@ TARFILE = ../dvir-deposit-$(shell date +'%Y-%m-%d').tar.gz
 # Rscript = ~/R/r-devel/BUILD/bin/Rscript
 Rscript = Rscript
 
-%.xml: %.cml
+%.xml: %.cml %.bib
 	# Protect HTML special chars in R code chunks
 	$(Rscript) -e 't <- readLines("$*.cml"); writeLines(gsub("str>", "strong>", gsub("<rcode([^>]*)>", "<rcode\\1><![CDATA[", gsub("</rcode>", "]]></rcode>", t))), "$*.xml")'
 	$(Rscript) toc.R $*.xml

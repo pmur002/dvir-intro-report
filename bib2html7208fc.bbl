@@ -1,0 +1,88 @@
+\begin{thebibliography}{}
+
+\bibitem[Chang, 2014]{pkg:extrafont}
+Chang, W. (2014).
+\newblock {\em extrafont: Tools for using fonts}.
+\newblock R package version 0.17.
+
+\bibitem[Chang et~al., 2014]{pkg:fontcm}
+Chang, W., Kryukov, A., and Murrell, P. (2014).
+\newblock {\em fontcm: Computer Modern font for use with extrafont package}.
+\newblock R package version 1.1.
+
+\bibitem[Dahl, 2016]{pkg:xtable}
+Dahl, D.~B. (2016).
+\newblock {\em xtable: Export Tables to LaTeX or HTML}.
+\newblock R package version 1.8-2.
+
+\bibitem[{Harrell Jr} et~al., 2017]{pkg:Hmisc}
+{Harrell Jr}, F.~E., with contributions~from Charles~Dupont, and many others.
+  (2017).
+\newblock {\em Hmisc: Harrell Miscellaneous}.
+\newblock R package version 4.0-3.
+
+\bibitem[Hunter, 2007]{Hunter:2007}
+Hunter, J.~D. (2007).
+\newblock Matplotlib: A 2d graphics environment.
+\newblock {\em Computing In Science \& Engineering}, 9(3):90--95.
+
+\bibitem[Knuth, 1986]{Knuth:1986:TEX:1102013}
+Knuth, D.~E. (1986).
+\newblock {\em The TeXbook}.
+\newblock Addison-Wesley Professional.
+
+\bibitem[Knuth, 1995]{dviformat}
+Knuth, D.~E. (1995).
+\newblock Dvitype.
+
+\bibitem[Leisch, 2002]{pkg:Sweave}
+Leisch, F. (2002).
+\newblock Sweave, part i: Mixing {R} and {LaTeX}.
+\newblock {\em R News}, 2:28--31.
+
+\bibitem[Murdoch, 2015]{pkg:patchDVI}
+Murdoch, D. (2015).
+\newblock {\em patchDVI: Package to Patch .dvi or .synctex Files}.
+\newblock R package version 1.9.1616.
+
+\bibitem[Murrell and Ihaka, 2000]{doi:10.1080/10618600.2000.10474900}
+Murrell, P. and Ihaka, R. (2000).
+\newblock An approach to providing mathematical annotation in plots.
+\newblock {\em Journal of Computational and Graphical Statistics},
+  9(3):582--599.
+
+\bibitem[Packard et~al., 2018]{cairo}
+Packard, K., Worth, C., and Esfahbod, B. (2018).
+\newblock Cairo graphics library.
+\newblock \url{https://www.cairographics.org/}.
+\newblock Accessed: 2018-08-30.
+
+\bibitem[{R Core Team}, 2018]{R}
+{R Core Team} (2018).
+\newblock {\em R: A Language and Environment for Statistical Computing}.
+\newblock R Foundation for Statistical Computing, Vienna, Austria.
+
+\bibitem[Sarkar, 2008]{pkg:lattice}
+Sarkar, D. (2008).
+\newblock {\em Lattice: Multivariate Data Visualization with {R}}.
+\newblock Springer, New York.
+\newblock ISBN 978-0-387-75968-5.
+
+\bibitem[Sidi and Polhamus, 2018]{pkg:texPreview}
+Sidi, J. and Polhamus, D. (2018).
+\newblock {\em texPreview: Compile and Preview Snippets of 'LaTeX' in
+  'RStudio'}.
+\newblock R package version 1.1.5.
+
+\bibitem[{The Matplotlib development team}, 2018]{dviread}
+{The Matplotlib development team} (2018).
+\newblock {\em dviread}.
+\newblock matplotlib module version 2.2.3.
+
+\bibitem[Xie, 2015]{pkg:knitr}
+Xie, Y. (2015).
+\newblock {\em Dynamic Documents with {R} and knitr}.
+\newblock Chapman and Hall/CRC, Boca Raton, Florida, 2nd edition.
+\newblock ISBN 978-1498716963.
+
+\end{thebibliography}

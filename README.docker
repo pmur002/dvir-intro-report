@@ -30,7 +30,7 @@
 
    E.G., test that the report will build !!!
 
-  sudo docker run -v /home/pmur002/Files/Research/Rstuff/Integration/gridGraphics/pubs/dvir-report/:/home/work/ -w /home/work --rm -t -i pmur002/dvir /bin/bash
+  sudo docker run -v $(pwd):/home/work/ -w /home/work --rm -t -i pmur002/dvir /bin/bash
 
 + To make image available on DockerHub ...
 
